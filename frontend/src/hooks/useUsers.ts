@@ -1,23 +1,47 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { registrarUsuario as registrarUsuarioService } from "../services/UserService"
+import { registrarUsuario as registrarUsuarioService, verificarCuenta as verificarCuentaService } from "../services/UserService"
 import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
+
+function getErrorMessage(error: any) {
+    return error?.message ||
+        error?.data?.message ||
+        error?.data?.error ||
+        "No se pudo completar el registro."
+}
 
 export function useUsers() {
-    const queryClient = useQueryClient()
+    // const queryClient = useQueryClient()
+    const navigate = useNavigate()
 
     const registrarUsuario = useMutation({
         mutationFn: registrarUsuarioService,
-        onSuccess: (data) => {
-            toast.success("¡Registro completado! Por favor, inicia sesión.")
-            // Opcional: invalidar queries si es necesario, por ejemplo, si tengo una lista de usuarios.
-            // queryClient.invalidateQueries({ queryKey: ['users'] })
-            console.log("Usuario registrado:", data)
+        onSuccess: (data: any) => {
+            // navigate("/check-email", { state: { message: data?.message || "Te enviamos un enlace de verificación a tu correo." } })
+            loginAutenticacion(data)
         },
         onError: (error: any) => {
-            toast.error(error.message || "No se pudo completar el registro.")
-            console.error("Error en la mutación de registro:", error)
+            toast.error(getErrorMessage(error))
         }
     })
 
-    return { registrarUsuario }
+    const verificarCuenta = useMutation({
+        mutationFn: verificarCuentaService,
+        onSuccess: (data) => {
+            toast.success(data.message || "¡Cuenta verificada con éxito! Ya puedes iniciar sesión.")
+            navigate('/login')
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "No se pudo verificar la cuenta.")
+        }
+    })
+
+    function loginAutenticacion(data: any) {
+        if (data?.token) {
+            localStorage.setItem("jwt", data.token)
+        }
+        navigate("/", { state: { message: data?.message || "¡Bienvenido!" } })
+    }
+
+    return { registrarUsuario, verificarCuenta }
 }

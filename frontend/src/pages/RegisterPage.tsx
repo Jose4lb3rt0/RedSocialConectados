@@ -15,6 +15,11 @@ const RegisterPage: React.FC = () => {
 
     return (
         <div className="p-8 min-h-screen w-full">
+            {registrarUsuario.isError && (
+                <p className="mb-4 text-red-600 bg-red-100 rounded px-3 py-2">
+                    {(registrarUsuario.error as any)?.message || "No se pudo completar el registro."}
+                </p>
+            )}
             <div className="max-w-6xl mx-auto">
                 <form
                     onSubmit={handleSubmit(onSubmit)}

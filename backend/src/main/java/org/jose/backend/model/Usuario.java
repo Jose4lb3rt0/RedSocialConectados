@@ -38,6 +38,9 @@ public class Usuario {
     private int monthOfBirth;
     private int yearOfBirth;
 
+    @Column(nullable = false)
+    private boolean isVerified = false;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -56,4 +59,6 @@ public class Usuario {
     public void setMonthOfBirth(int monthOfBirth) { this.monthOfBirth = monthOfBirth; }
     public int getYearOfBirth() { return yearOfBirth; }
     public void setYearOfBirth(int yearOfBirth) { this.yearOfBirth = yearOfBirth; }
+    public boolean isVerified() { return isVerified; }
+    public void setVerified(boolean isVerified) { this.isVerified = isVerified; }
 }
