@@ -49,8 +49,8 @@ public class AuthController {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(loginRequest.getEmail());
         if (usuarioOpt.isEmpty() ||
             !passwordEncoder.matches(
-                    loginRequest.getPassword(),
-                    usuarioOpt.get().getPassword())
+                loginRequest.getPassword(),
+                usuarioOpt.get().getPassword())
         ){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
         }
@@ -59,5 +59,26 @@ public class AuthController {
         String token = jwtTokenUtil.generarToken(usuario);
 
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(@RequestHeader("Authorization") String auth) {
+        String token = auth.replace("Bearer ", "");
+
+        if (!jwtTokenUtil.validarToken(token)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String email = jwtTokenUtil.extraerUsuarioDelToken(token);
+        Usuario user = usuarioRepository.findByEmail(email).orElse(null);
+
+        if (user == null) { return ResponseEntity.status(404).build(); }
+
+        return ResponseEntity.ok(Map.of(
+            "id", user.getId(),
+            "email", user.getEmail(),
+            "name", user.getName(),
+            "surname", user.getSurname()
+        ));
     }
 }

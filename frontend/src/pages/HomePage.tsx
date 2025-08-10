@@ -1,25 +1,18 @@
-import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { useAuth } from "../auth/AuthContext"
 
 const HomePage: React.FC = () => {
-    const [estaLogeado, setEstaLogeado] = useState(false)
+    const { isAuthenticated, user, logout } = useAuth()
 
-    useEffect(() => {
-        const token = localStorage.getItem("jwt")
-        setEstaLogeado(!!token)
-    }, [])
-
-    if (estaLogeado) {
-        return (
-            <div>
-                <h1>Mi muro</h1>
-                <button onClick={() => {
-                    localStorage.removeItem("jwt");
-                    window.location.reload();
-                }}>Cerrar sesión</button>
-            </div>
-        )
-    }
+    if (isAuthenticated) {
+    return (
+      <div>
+        <h1>Mi muro</h1>
+        <p>Hola, {user?.name}</p>
+        <button onClick={logout}>Cerrar sesión</button>
+      </div>
+    )
+  }
 
     return (
         <div>

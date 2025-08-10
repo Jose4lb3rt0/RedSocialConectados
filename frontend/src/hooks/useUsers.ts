@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { iniciarSesion as iniciarSesionService, registrarUsuario as registrarUsuarioService, verificarCuenta as verificarCuentaService } from "../services/UserService"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../auth/AuthContext"
 
 function getErrorMessage(error: any) {
     return error?.message ||
@@ -13,6 +14,7 @@ function getErrorMessage(error: any) {
 export function useUsers() {
     // const queryClient = useQueryClient()
     const navigate = useNavigate()
+    const { login } = useAuth()
 
     const iniciarSesion = useMutation({
         mutationFn: iniciarSesionService,
@@ -46,9 +48,9 @@ export function useUsers() {
         }
     })
 
-    function loginAutenticacion(data: any) {
+    async function loginAutenticacion(data: any) {
         if (data?.token) {
-            localStorage.setItem("jwt", data.token)
+            await login(data.token)
         }
         navigate("/", { state: { message: data?.message || "¡Bienvenido!" } })
     }
