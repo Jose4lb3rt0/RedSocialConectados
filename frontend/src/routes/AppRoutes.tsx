@@ -19,7 +19,7 @@ const AppRoutes: React.FC = () => {
             </Route>
 
             <Route element={<RequireAuth />}>
-                <Route path="/feed" element={<div>Mi feed</div>} />
+                {/* <Route path="/feed" element={<div>Mi feed</div>} /> */}
                 <Route path="/profile" element={<div>Perfil</div>} />
             </Route>
         </Routes>
