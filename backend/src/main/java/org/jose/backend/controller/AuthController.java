@@ -1,13 +1,17 @@
 package org.jose.backend.controller;
 
 import jakarta.validation.Valid;
+import org.jose.backend.dto.EditProfileRequest;
 import org.jose.backend.dto.LoginRequest;
+import org.jose.backend.dto.UserProfileResponse;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.jose.backend.security.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +25,6 @@ public class AuthController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -80,5 +83,71 @@ public class AuthController {
             "name", user.getName(),
             "surname", user.getSurname()
         ));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileResponse> getProfile(@RequestHeader("Authorization") String auth) {
+        String token = auth.replace("Bearer ", "");
+
+        if (!jwtTokenUtil.validarToken(token)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String email = jwtTokenUtil.extraerUsuarioDelToken(token);
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+
+        assert usuario != null;
+        UserProfileResponse response = new UserProfileResponse(
+                usuario.getProfilePictureURL(),
+                usuario.getBannerPictureURL(),
+                usuario.getName(),
+                usuario.getSurname(),
+                usuario.getGender(),
+                usuario.getBiography(),
+                usuario.getDayOfBirth(),
+                usuario.getMonthOfBirth(),
+                usuario.getYearOfBirth()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<UserProfileResponse> updateProfile(@RequestHeader("Authorization") String auth,
+                                                             @RequestBody EditProfileRequest req) {
+        if (auth == null || !auth.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body((UserProfileResponse) Map.of("message", "Falta token"));
+        }
+
+        String token = auth.substring(7);
+        if (!jwtTokenUtil.validarToken(token)) {
+            return ResponseEntity.status(401).body((UserProfileResponse) Map.of("message", "Token inválido o expirado"));
+        }
+
+        String email = jwtTokenUtil.extraerUsuarioDelToken(token);
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        if (req.getName() != null) usuario.setName(req.getName().trim());
+        if (req.getSurname() != null) usuario.setSurname(req.getSurname().trim());
+        if (req.getGender() != null) usuario.setGender(req.getGender());
+        if (req.getBiography() != null) usuario.setBiography(req.getBiography());
+        if (req.getDayOfBirth() != null) usuario.setDayOfBirth(req.getDayOfBirth());
+        if (req.getMonthOfBirth() != null) usuario.setMonthOfBirth(req.getMonthOfBirth());
+        if (req.getYearOfBirth() != null) usuario.setYearOfBirth(req.getYearOfBirth());
+
+        usuarioRepository.save(usuario);
+
+        UserProfileResponse response = new UserProfileResponse(
+            usuario.getProfilePictureURL(),
+            usuario.getBannerPictureURL(),
+            usuario.getName(),
+            usuario.getSurname(),
+            usuario.getGender(),
+            usuario.getBiography(),
+            usuario.getDayOfBirth(),
+            usuario.getMonthOfBirth(),
+            usuario.getYearOfBirth()
+        );
+        return ResponseEntity.ok(response);
     }
 }

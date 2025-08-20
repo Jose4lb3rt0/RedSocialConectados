@@ -1,5 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { iniciarSesion as iniciarSesionService, registrarUsuario as registrarUsuarioService, verificarCuenta as verificarCuentaService } from "../services/UserService"
+import {
+    iniciarSesion as iniciarSesionService,
+    registrarUsuario as registrarUsuarioService,
+    verificarCuenta as verificarCuentaService,
+    actualizarPerfil as actualizarPerfilService
+} from "../services/UserService"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../auth/AuthContext"
@@ -12,14 +17,14 @@ function getErrorMessage(error: any) {
 }
 
 export function useUsers() {
-    // const queryClient = useQueryClient()
+    const queryClient = useQueryClient()
     const navigate = useNavigate()
     const { login } = useAuth()
 
     const iniciarSesion = useMutation({
         mutationFn: iniciarSesionService,
         onSuccess: (data: any) => {
-            loginAutenticacion(data)            
+            loginAutenticacion(data)
         },
         onError: (error: any) => {
             toast.error(getErrorMessage(error))
@@ -55,5 +60,20 @@ export function useUsers() {
         navigate("/", { state: { message: data?.message || "¡Bienvenido!" } })
     }
 
-    return { registrarUsuario, verificarCuenta, iniciarSesion }
+    const actualizarPerfil = useMutation({
+        mutationFn: actualizarPerfilService,
+        onSuccess: (data: any) => {
+            toast.success(data?.message || "Perfil actualizado.")
+            // Refresca la caché del perfil
+            queryClient.invalidateQueries({ queryKey: ["profile"] })
+        },
+        onError: (e) => toast.error(getErrorMessage(e))
+    })
+
+    return { 
+        registrarUsuario, 
+        verificarCuenta, 
+        iniciarSesion, 
+        actualizarPerfil 
+    }
 }

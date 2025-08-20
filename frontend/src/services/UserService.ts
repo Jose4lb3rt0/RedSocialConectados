@@ -1,5 +1,20 @@
 import { apiFetch } from "../api/apibase"
-import type { RegisterFormData } from "../schemas/userSchemas"
+import type { EditProfileFormData, RegisterFormData } from "../schemas/userSchemas"
+
+export type UserProfile = {
+    id: number
+    email: string
+    name: string
+    surname: string
+    gender: "male" | "female" | "other" | "prefer not to say"
+    dayOfBirth: number
+    monthOfBirth: number
+    yearOfBirth: number
+    // birthday: string
+    biography?: string
+    profilePic?: string
+    bannerPic?: string
+}
 
 export async function registrarUsuario(data: RegisterFormData) {
     try {
@@ -49,4 +64,28 @@ export async function verificarCuenta(token: string) {
         console.error("Error al verificar la cuenta:", error)
         throw error
     }
+}
+
+export async function obtenerPerfil(): Promise<UserProfile> {
+    return apiFetch("/auth/profile", {
+        method: "GET"
+    })
+}
+
+export async function actualizarPerfil(data: EditProfileFormData) {
+    const { birthday, ...rest } = data
+    const dd = new Date(birthday)
+    const payload = { 
+        ...rest, 
+        dayOfBirth: dd.getUTCDate(), 
+        monthOfBirth: dd.getUTCMonth() + 1, 
+        yearOfBirth: dd.getUTCFullYear() 
+    }
+
+    // console.log("Payload que se envía:", payload)
+
+    return apiFetch("/auth/profile", {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+    })
 }

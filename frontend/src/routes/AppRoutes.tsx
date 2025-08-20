@@ -5,6 +5,8 @@ import RegisterPage from "../pages/RegisterPage"
 import VerifyAccountPage from "../pages/VerifyAccountPage"
 import CheckEmailPage from "../pages/CheckEmailPage"
 import { RequireAuth, RequireGuest } from "./Guards"
+import ProfilePage from "../pages/ProfilePage"
+import Layout from "../components/Navigation/Layout"
 
 const AppRoutes: React.FC = () => {
     return (
@@ -20,7 +22,7 @@ const AppRoutes: React.FC = () => {
 
             <Route element={<RequireAuth />}>
                 {/* <Route path="/feed" element={<div>Mi feed</div>} /> */}
-                <Route path="/profile" element={<div>Perfil</div>} />
+                <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
             </Route>
         </Routes>
     )

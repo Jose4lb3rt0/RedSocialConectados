@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "../../auth/AuthContext"
-import { FaChevronCircleDown, FaChevronDown, FaChevronUp, FaCog, FaSearch, FaUser } from "react-icons/fa"
-import { FaPerson } from "react-icons/fa6"
+import { FaChevronDown, FaChevronUp, FaCog, FaSearch, FaUser } from "react-icons/fa"
 import { useState } from "react"
 import { IoLogOutSharp } from "react-icons/io5"
 
@@ -46,8 +45,17 @@ const Navbar: React.FC = () => {
                                 <FaChevronUp className="text-white h-2 w-auto" />
                             )}
                         </div>
-                        <div className={`absolute right-1 top-10 z-10 w-44 ${isUserMenuOpen ? "block" : "hidden"} bg-blue-100 rounded-lg shadow-lg`}>
+                        <div className={`absolute right-1 top-10 z-10 w-52 ${isUserMenuOpen ? "block" : "hidden"} bg-blue-100 rounded-lg shadow-lg`}>
                             <ul className="py-1">
+                                <li>
+                                    <div className="w-full flex items-center gap-2 px-4 py-2">
+                                        <img src={user?.photoURL} alt="User Avatar" className="h-10 w-10 rounded-full border-blue-200 border-2" />
+                                        <span className="text-sm truncate">
+                                            {user?.name} {user?.surname}
+                                        </span>
+                                    </div>
+                                </li>
+                                <hr className="border-gray-300 mx-2 py-1" />
                                 <li>
                                     <Link
                                         to="/profile"

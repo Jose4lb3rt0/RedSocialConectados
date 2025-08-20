@@ -38,6 +38,38 @@ public class Usuario {
     private int monthOfBirth;
     private int yearOfBirth;
 
+    @Column(nullable = true)
+    private String biography;
+
+    public String getBiography() {
+        return biography;
+    }
+
+    public void setBiography(String biography) {
+        this.biography = biography;
+    }
+
+    @Column(nullable = true)
+    private String profilePictureURL;
+    @Column(nullable = true)
+    private String bannerPictureURL;
+
+    public String getProfilePictureURL() {
+        return profilePictureURL;
+    }
+
+    public void setProfilePictureURL(String profilePictureURL) {
+        this.profilePictureURL = profilePictureURL;
+    }
+
+    public String getBannerPictureURL() {
+        return bannerPictureURL;
+    }
+
+    public void setBannerPictureURL(String bannerPictureURL) {
+        this.bannerPictureURL = bannerPictureURL;
+    }
+
     @Column(nullable = false)
     private boolean isVerified = false;
 
