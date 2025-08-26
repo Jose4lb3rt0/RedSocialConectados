@@ -6,9 +6,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { obtenerPerfil } from "@/services/UserService"
 import { zodResolver } from "@hookform/resolvers/zod"
 import EditProfileDialog from "@/components/dialogs/EditProfileDialog"
+import ChangeMyPictureDialog from "@/components/dialogs/ChangeMyPictureDialog"
+import { apiFetch } from "@/api/apibase"
 
 const ProfilePage: React.FC = () => {
     const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false)
+    const [changeMyPhotoMode, setChangeMyPhotoMode] = useState<"profile" | "banner">("profile")
+    const [isChangeMyPictureDialogOpen, setIsChangeMyPictureDialogOpen] = useState(false)
     const queryClient = useQueryClient()
 
     // Query principal para la página (no para el modal)
@@ -37,7 +41,7 @@ const ProfilePage: React.FC = () => {
                 surname: userProfile.surname,
                 gender: userProfile.gender,
                 // birthday: userProfile.birthday,
-                biography: userProfile.biography
+                biography: userProfile.biography ?? ""
             })
         }
     }, [userProfile, reset])
@@ -47,6 +51,26 @@ const ProfilePage: React.FC = () => {
         await queryClient.invalidateQueries({ queryKey: ["profile"] })
     }
 
+    const handleSavePicture = async (file: File) => {
+        try {
+            const formData = new FormData()
+            formData.append("file", file)
+
+            let endpoint = changeMyPhotoMode === "profile"
+                ? "/users/me/profile-picture"
+                : "/users/me/banner-picture"
+
+            await apiFetch(endpoint, {
+                method: "PATCH",
+                body: formData,
+            })
+            
+            queryClient.invalidateQueries({ queryKey: ["profile"] })
+        } catch (error: any) {
+            console.error("Error al subir la imagen:", error)
+        }
+    }
+
     if (isLoading) return <p>Cargando perfil...</p>
     if (error instanceof Error) return <p>Error al cargar perfil: {error.message}</p>
 
@@ -54,19 +78,42 @@ const ProfilePage: React.FC = () => {
         <div className="w-full max-w-6xl mx-auto">
             {/* Banner */}
             <div className="bg-blue-200 w-full h-50 relative rounded-b-md">
+                {/* Imagen de banner */}
+                <img
+                    src={userProfile?.bannerPicture?.imagenUrl || "/placeholder-banner.png"}
+                    alt="Banner"
+                    className="w-full h-full object-cover rounded-b-md"
+                />
                 {/* Sombreado de negro */}
                 <div className="bg-gradient-to-b from-transparent to-black/30 w-full h-[20%] absolute bottom-0 z-10 rounded-b-md"></div>
+                <button
+                    className="absolute bottom-3 right-5 z-11 flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
+                    onClick={() => {
+                        setChangeMyPhotoMode("banner")
+                        setIsChangeMyPictureDialogOpen(true)
+                    }}
+                >
+                    <FaCamera />
+                    Agregar foto de portada
+                </button>
+
                 {/* Foto de perfil */}
                 <div className="absolute flex items-center justify-center -bottom-20 left-10 z-11">
                     <div className="relative flex items-center justify-center w-30 h-30 rounded-full overflow-hidden bg-white">
                         <img
-                            src={userProfile?.profilePic || "/placeholder-avatar.png"}
+                            src={userProfile?.profilePicture?.imagenUrl || "/placeholder-avatar.png"}
                             alt="Foto de perfil"
                             className="w-[95%] h-[95%] object-cover bg-blue-300 rounded-full"
                         />
                     </div>
                     {/* Botón de cambiar foto de perfil */}
-                    <button className="absolute bottom-2 right-2 bg-gray-500 p-2 rounded-full cursor-pointer hover:bg-gray-600 transition-all duration-300">
+                    <button
+                        className="absolute bottom-2 right-2 bg-gray-500 p-2 rounded-full cursor-pointer hover:bg-gray-600 transition-all duration-300"
+                        onClick={() => {
+                            setChangeMyPhotoMode("profile")
+                            setIsChangeMyPictureDialogOpen(true)
+                        }}
+                    >
                         <FaCamera className="text-white" />
                     </button>
                 </div>
@@ -100,6 +147,15 @@ const ProfilePage: React.FC = () => {
             <EditProfileDialog
                 isOpen={isEditProfileDialogOpen}
                 setIsOpen={setIsEditProfileDialogOpen}
+            />
+
+            <ChangeMyPictureDialog
+                mode={changeMyPhotoMode}
+                isOpen={isChangeMyPictureDialogOpen}
+                setIsOpen={setIsChangeMyPictureDialogOpen}
+                onSave={(file) => {
+                    handleSavePicture(file)
+                }}
             />
         </div>
     )

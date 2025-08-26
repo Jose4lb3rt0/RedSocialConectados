@@ -41,33 +41,20 @@ public class Usuario {
     @Column(nullable = true)
     private String biography;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profile_picture_id", referencedColumnName = "id")
+    private Imagen profilePicture;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "banner_picture_id", referencedColumnName = "id")
+    private Imagen bannerPicture;
+
     public String getBiography() {
         return biography;
     }
 
     public void setBiography(String biography) {
         this.biography = biography;
-    }
-
-    @Column(nullable = true)
-    private String profilePictureURL;
-    @Column(nullable = true)
-    private String bannerPictureURL;
-
-    public String getProfilePictureURL() {
-        return profilePictureURL;
-    }
-
-    public void setProfilePictureURL(String profilePictureURL) {
-        this.profilePictureURL = profilePictureURL;
-    }
-
-    public String getBannerPictureURL() {
-        return bannerPictureURL;
-    }
-
-    public void setBannerPictureURL(String bannerPictureURL) {
-        this.bannerPictureURL = bannerPictureURL;
     }
 
     @Column(nullable = false)
@@ -91,6 +78,10 @@ public class Usuario {
     public void setMonthOfBirth(int monthOfBirth) { this.monthOfBirth = monthOfBirth; }
     public int getYearOfBirth() { return yearOfBirth; }
     public void setYearOfBirth(int yearOfBirth) { this.yearOfBirth = yearOfBirth; }
+    public Imagen getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(Imagen profilePicture) { this.profilePicture = profilePicture; }
+    public Imagen getBannerPicture() { return bannerPicture; }
+    public void setBannerPicture(Imagen bannerPicture) { this.bannerPicture = bannerPicture; }
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean isVerified) { this.isVerified = isVerified; }
 }

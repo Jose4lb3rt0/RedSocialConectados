@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import org.jose.backend.dto.EditProfileRequest;
 import org.jose.backend.dto.LoginRequest;
 import org.jose.backend.dto.UserProfileResponse;
+import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.jose.backend.security.JwtTokenUtil;
+import org.jose.backend.services.ImagenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +33,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    private ImagenService imagenService;
 
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@Valid @RequestBody Usuario usuario) {
@@ -64,7 +69,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("token", token));
     }
 
-    @GetMapping("/me")
+    /*@GetMapping("/me")
     public ResponseEntity<?> me(@RequestHeader("Authorization") String auth) {
         String token = auth.replace("Bearer ", "");
 
@@ -98,8 +103,8 @@ public class AuthController {
 
         assert usuario != null;
         UserProfileResponse response = new UserProfileResponse(
-                usuario.getProfilePictureURL(),
-                usuario.getBannerPictureURL(),
+                usuario.getProfilePicture(),
+                usuario.getBannerPicture(),
                 usuario.getName(),
                 usuario.getSurname(),
                 usuario.getGender(),
@@ -138,8 +143,8 @@ public class AuthController {
         usuarioRepository.save(usuario);
 
         UserProfileResponse response = new UserProfileResponse(
-            usuario.getProfilePictureURL(),
-            usuario.getBannerPictureURL(),
+            usuario.getProfilePicture(),
+            usuario.getBannerPicture(),
             usuario.getName(),
             usuario.getSurname(),
             usuario.getGender(),
@@ -149,5 +154,5 @@ public class AuthController {
             usuario.getYearOfBirth()
         );
         return ResponseEntity.ok(response);
-    }
+    }*/
 }

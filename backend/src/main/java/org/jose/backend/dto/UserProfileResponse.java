@@ -1,10 +1,12 @@
 package org.jose.backend.dto;
 
+import org.jose.backend.model.Imagen;
+
 import java.time.Instant;
 
 public class UserProfileResponse {
-    private String profilePictureURL;
-    private String bannerPictureURL;
+    private Imagen profilePicture;
+    private Imagen bannerPicture;
 
     private String name;
     private String surname;
@@ -15,9 +17,9 @@ public class UserProfileResponse {
     private int monthOfBirth;
     private int yearOfBirth;
 
-    public UserProfileResponse(String profilePictureURL, String bannerPictureURL, String name, String surname, String gender, String biography, int dayOfBirth, int monthOfBirth, int yearOfBirth) {
-        this.profilePictureURL = profilePictureURL;
-        this.bannerPictureURL = bannerPictureURL;
+    public UserProfileResponse(Imagen profilePicture, Imagen bannerPicture, String name, String surname, String gender, String biography, int dayOfBirth, int monthOfBirth, int yearOfBirth) {
+        this.profilePicture = profilePicture;
+        this.bannerPicture = bannerPicture;
         this.name = name;
         this.surname = surname;
         this.gender = gender;
@@ -27,20 +29,20 @@ public class UserProfileResponse {
         this.yearOfBirth = yearOfBirth;
     }
 
-    public String getProfilePictureURL() {
-        return profilePictureURL;
+    public Imagen getProfilePicture() {
+        return profilePicture;
     }
 
-    public void setProfilePictureURL(String profilePictureURL) {
-        this.profilePictureURL = profilePictureURL;
+    public void setProfilePicture(Imagen profilePicture) {
+        this.profilePicture = profilePicture;
     }
 
-    public String getBannerPictureURL() {
-        return bannerPictureURL;
+    public Imagen getBannerPicture() {
+        return bannerPicture;
     }
 
-    public void setBannerPictureURL(String bannerPictureURL) {
-        this.bannerPictureURL = bannerPictureURL;
+    public void setBannerPicture(Imagen bannerPicture) {
+        this.bannerPicture = bannerPicture;
     }
 
     public String getName() {

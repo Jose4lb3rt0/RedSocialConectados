@@ -35,8 +35,16 @@ const Navbar: React.FC = () => {
                 {/* Bloquesito 2: Menú de usuario */}
                 <li>
                     <div className="relative cursor-pointer" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
-                        <button className="flex items-center p-2 rounded-full border border-gray-300">
-                            <FaUser className="text-gray-500" />
+                        <button className={`${user?.profilePicture?.imagenUrl ? "p-0" : "p-2"} flex items-center rounded-full border border-gray-300`}>
+                            {user?.profilePicture?.imagenUrl ? (
+                                <img
+                                    src={user.profilePicture.imagenUrl}
+                                    alt="User Avatar"
+                                    className="h-8 w-8 rounded-full border-blue-200 border"
+                                />
+                            ) : (
+                                <FaUser className="text-gray-500" />
+                            )}
                         </button>
                         <div className="bg-gray-500 border-blue-50 border-1 flex items-center justify-center text-white rounded-full p-1 absolute -bottom-1 -right-1">
                             {isUserMenuOpen ? (
@@ -49,7 +57,11 @@ const Navbar: React.FC = () => {
                             <ul className="py-1">
                                 <li>
                                     <div className="w-full flex items-center gap-2 px-4 py-2">
-                                        <img src={user?.photoURL} alt="User Avatar" className="h-10 w-10 rounded-full border-blue-200 border-2" />
+                                        <img 
+                                            src={user?.profilePicture?.imagenUrl} 
+                                            alt="User Avatar" 
+                                            className="h-10 w-10 rounded-full border-blue-200 border-2" 
+                                        />
                                         <span className="text-sm truncate">
                                             {user?.name} {user?.surname}
                                         </span>

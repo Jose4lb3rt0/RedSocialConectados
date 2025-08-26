@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { apiFetch } from "../api/apibase"
+import type { UserProfile } from "@/services/UserService"
 
 type User = {
     id: number,
     email: string,
     name: string,
     surname: string,
+    photoURL?: string,
 }
 
 type AuthContextType = {
-    user: User | null
+    user: UserProfile /* User */ | null
     token: string | null,
     isAuthenticated: boolean,
     login: (token: string) => Promise<void>,
@@ -21,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("jwt"))
-    const [user, setUser] = useState<User | null>(null)
+    const [user, setUser] = useState<UserProfile | null>(null)
 
     const isAuthenticated = !!token
 
@@ -46,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [])
 
     async function refreshMe() {
-        const me = await apiFetch("/auth/me", {
+        const me = await apiFetch("/users/me", {
             method: "GET",
         })
         setUser(me)

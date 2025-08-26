@@ -43,7 +43,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ isOpen, setIsOpen
             surname: profile.surname,
             gender: profile.gender,
             birthday: birthday,
-            biography: profile.biography
+            biography: profile.biography ?? ""
         })
     }, [profile, reset])
 
