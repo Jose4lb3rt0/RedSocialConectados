@@ -10,9 +10,7 @@ const HomePage: React.FC = () => {
   if (isAuthenticated) {
     return (
       <Layout>
-        <div>
-          <h1>Mi muro</h1>
-          <p>Hola, {user?.name}</p>
+        <div className="py-4">
           <PostComposer />
           <PostList />
         </div>

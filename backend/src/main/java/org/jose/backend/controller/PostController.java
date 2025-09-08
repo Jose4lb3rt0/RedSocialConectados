@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.jose.backend.dto.CreatePostRequest;
 import org.jose.backend.dto.PostResponse;
 import org.jose.backend.dto.UpdatePostRequest;
+import org.jose.backend.model.Post;
 import org.jose.backend.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,7 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostResponse> create(
-        @Valid @RequestBody CreatePostRequest req
+        @Valid @RequestBody Post req
         //@RequestHeader("Authorization") String auth,
         //@Valid @RequestBody CreatePostRequest request
     ) {

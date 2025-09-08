@@ -8,8 +8,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import EditProfileDialog from "@/components/dialogs/EditProfileDialog"
 import ChangeMyPictureDialog from "@/components/dialogs/ChangeMyPictureDialog"
 import { apiFetch } from "@/api/apibase"
+import { useAuth } from "@/auth/AuthContext"
 
 const ProfilePage: React.FC = () => {
+    const { refreshMe } = useAuth()
     const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false)
     const [changeMyPhotoMode, setChangeMyPhotoMode] = useState<"profile" | "banner">("profile")
     const [isChangeMyPictureDialogOpen, setIsChangeMyPictureDialogOpen] = useState(false)
@@ -65,7 +67,10 @@ const ProfilePage: React.FC = () => {
                 body: formData,
             })
             
-            queryClient.invalidateQueries({ queryKey: ["profile"] })
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["profile"] }),
+                refreshMe()
+            ])
         } catch (error: any) {
             console.error("Error al subir la imagen:", error)
         }

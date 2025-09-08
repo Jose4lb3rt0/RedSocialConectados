@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useCreatePost } from "../hooks/usePosts";
+import { useAuth } from "@/auth/AuthContext";
 
 export default function PostComposer() {
+    const { user } = useAuth()
     const [content, setContent] = useState("")
     const create = useCreatePost()
 
     return (
-        <div className="border rounded p-3">
+        <div className="border w-full max-w-lg mx-auto rounded p-3">
             <textarea 
                 className="w-full border rounded p-2"
-                placeholder="¿Qué estás pensando?"
+                placeholder={`¿Qué estás pensando, ${user?.name}?`}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
             />

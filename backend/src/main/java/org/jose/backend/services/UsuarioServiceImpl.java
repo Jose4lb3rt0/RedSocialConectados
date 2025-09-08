@@ -3,6 +3,7 @@ package org.jose.backend.services;
 import org.jose.backend.dto.EditProfileRequest;
 import org.jose.backend.dto.UserProfileResponse;
 import org.jose.backend.model.Imagen;
+import org.jose.backend.model.Post;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ImagenService imagenService;
+    @Autowired private PostService postService;
 
     @Override
     public Usuario getUsuarioPorEmail(String email) {
@@ -49,18 +51,34 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UserProfileResponse actualizarFotoPerfil(String email, MultipartFile file) throws IOException {
         Usuario usuario = getUsuarioPorEmail(email);
+
         Imagen imagen = imagenService.uploadImagen(file);
         usuario.setProfilePicture(imagen);
         usuarioRepository.save(usuario);
+
+        Post post = new Post();
+        post.setType("profile_photo");
+        post.setContent("");
+        post.setMediaUrl(imagen.getImagenUrl());
+        postService.create(post);
+
         return mapToUserProfileResponse(usuario);
     }
 
     @Override
     public UserProfileResponse actualizarFotoPortada(String email, MultipartFile file) throws IOException {
         Usuario usuario = getUsuarioPorEmail(email);
+
         Imagen imagen = imagenService.uploadImagen(file);
         usuario.setBannerPicture(imagen);
         usuarioRepository.save(usuario);
+
+        Post post = new Post();
+        post.setType("banner_photo");
+        post.setContent("");
+        post.setMediaUrl(imagen.getImagenUrl());
+        postService.create(post);
+
         return mapToUserProfileResponse(usuario);
     }
 

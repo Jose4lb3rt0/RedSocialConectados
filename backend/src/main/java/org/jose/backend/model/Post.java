@@ -30,6 +30,16 @@ public class Post {
     private boolean edited = false;
     private boolean deleted = false;
 
+    private String type;  // "profile_photo", "banner_photo", "text"
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public Long getId() {
         return id;
     }

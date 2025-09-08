@@ -29,8 +29,10 @@ public class PostService {
         PostResponse resp = new PostResponse();
         resp.setId(post.getId());
         resp.setAuthorId(post.getAuthor().getId());
-        resp.setAuthorName(post.getAuthor().getName());
+        resp.setAuthorPhotoUrl(post.getAuthor().getProfilePicture().getImagenUrl());
+        resp.setAuthorName(post.getAuthor().getName() + " " + post.getAuthor().getSurname());
         resp.setContent(post.getContent());
+        resp.setPostType(post.getType());
         resp.setMediaUrl(post.getMediaUrl());
         resp.setCreatedAt(post.getCreatedAt());
         resp.setUpdatedAt(post.getUpdatedAt());
@@ -38,15 +40,16 @@ public class PostService {
         return resp;
     }
 
-    public PostResponse create(CreatePostRequest req) { //quite el String bearer
+    public PostResponse create(Post post) { //quite el String bearer
         String email = getCurrentUserEmail();
         //String email = jwt.extraerUsuarioDelToken(bearer.replace("Bearer ", ""));
         Usuario author = userRepo.findByEmail(email).orElseThrow();
 
         Post p = new Post();
         p.setAuthor(author);
-        p.setContent(req.getContent().trim());
-        p.setMediaUrl(req.getMediaUrl());
+        p.setType(post.getType());
+        p.setContent(post.getContent().trim());
+        p.setMediaUrl(post.getMediaUrl());
         postRepo.save(p);
         return toResp(p);
     }

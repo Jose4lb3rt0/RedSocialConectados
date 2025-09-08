@@ -1,43 +1,141 @@
+import { BsThreeDotsVertical } from "react-icons/bs"
 import { useAuth } from "../auth/AuthContext";
 import { useDeletePost, useFeed, useUpdatePost } from "../hooks/usePosts";
+import { useState } from "react";
+import { FaComment, FaEdit, FaShare, FaThumbsUp, FaTrash } from "react-icons/fa";
+
+// Tipo de post según el backend
+type PostType = "text" | "profile_photo" | "banner_photo";
 
 export default function PostList() {
+    const [isPostOptionsOpen, setIsPostOptionsOpen] = useState<{ [key: string]: boolean }>({})
     const { data, isLoading } = useFeed()
     const deletee = useDeletePost()
     const update = useUpdatePost()
     const { user } = useAuth()
 
     if (isLoading) {
-        <p>Cargando...</p>
+        return <p>Cargando...</p>
     }
 
     const page = data
 
     return (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 w-full max-w-lg mx-auto space-y-3">
+            {page?.content?.map((p: any) => {
+                const postType: PostType = (p.postType ?? p.type) as PostType
 
-            {page?.content?.map((p: any) => (
-                <div key={p.id} className="border rounded p-3">
-                    <div className="text-sm text-gray-600">
-                        {p.authorName} · {new Date(p.createdAt).toLocaleString()}
-                        {p.edited && " · editado"}
-                    </div>
-                    <p className="mt-2">{p.content}</p>
+                const handleEdit = () => {
+                    const original = (p.content ?? "").trim();
+                    const input = prompt("Nuevo contenido", p.content ?? "");
+                    // Cancelado
+                    if (input === null) {
+                        setIsPostOptionsOpen({ [p.id]: false });
+                        return;
+                    }
+                    const next = input.trim();
 
-                    {user?.id === p.authorId && (
-                        <div className="mt-2 flex gap-2">
-                            <button className="px-2 py-1 border rounded"
-                                onClick={() => update.mutate({ id: p.id, content: prompt("Nuevo contenido", p.content) || p.content })}>
-                                Editar
-                            </button>
-                            <button className="px-2 py-1 border rounded text-red-600"
-                                onClick={() => deletee.mutate(p.id)}>
-                                Eliminar
-                            </button>
+                    // Sin cambios
+                    if (next === original) {
+                        setIsPostOptionsOpen({ [p.id]: false });
+                        return;
+                    }
+
+                    // Evitar dejar vacío (post solo imagen o borrado total)
+                    if (next.length === 0) {
+                        alert("El contenido no puede quedar vacío.");
+                        setIsPostOptionsOpen({ [p.id]: false });
+                        return;
+                    }
+
+                    update.mutate({ id: p.id, content: next });
+                    setIsPostOptionsOpen({ [p.id]: false });
+                };
+
+                return (
+                    <div key={p.id} className="border rounded">
+                        <div className="flex items-center text-sm text-gray-600 p-3">
+                            {p.authorPhotoUrl ? (
+                                <img
+                                    src={p.authorPhotoUrl}
+                                    alt="Avatar"
+                                    className="inline-block h-7 w-7 rounded-full mr-2"
+                                />
+                            ) : (
+                                <div className="inline-block h-7 w-7 rounded-full mr-2 bg-gray-300" />
+                            )}
+                            <div className="flex flex-col">
+                                <span className="font-bold" >
+                                    {p.authorName}
+                                    <span className="font-normal">
+                                        {postType === "profile_photo" && " actualizó su foto de perfil"}
+                                        {postType === "banner_photo" && " actualizó su foto de portada"}
+                                        {postType === "text" && " publicó un nuevo post"}
+                                        {/* {p.authorName} · {new Date(p.createdAt).toLocaleString()} */}
+                                    </span>
+                                </span>
+                                <span>{new Date(p.createdAt).toLocaleString()} {p.edited && " · editado"}</span>
+                            </div>
+
+                            <div className="ml-auto relative">
+                                <button
+                                    onClick={() => setIsPostOptionsOpen({ [p.id]: !isPostOptionsOpen[p.id] })}
+                                    className="p-2 rounded-full hover:bg-gray-200 cursor-pointer"
+                                >
+                                    <BsThreeDotsVertical className="text-gray-600 text-lg" />
+                                </button>
+                                {isPostOptionsOpen[p.id] && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10">
+                                        <ul>
+                                            <li>
+                                                <button
+                                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                    onClick={handleEdit}
+                                                >
+                                                    <FaEdit /> Editar
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button
+                                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 flex items-center gap-2"
+                                                    onClick={() => {
+                                                        deletee.mutate(p.id);
+                                                        setIsPostOptionsOpen({ [p.id]: false });
+                                                    }}
+                                                >
+                                                    <FaTrash /> Eliminar
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    )}
-                </div>
-            ))}
+
+                        <p className="px-3">{p.content}</p>
+                        {p.mediaUrl && <img src={p.mediaUrl} alt="Media" className={`${p.content ? "mt-2" : ""} w-full`} />}
+
+                        <div className="w-full grid grid-cols-3 text-sm text-gray-600 border-t mt-2">
+                            <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaThumbsUp /> Me gusta</button>
+                            <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaComment /> Comentar</button>
+                            <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaShare /> Compartir</button>
+                        </div>
+
+                        {/* {user?.id === p.authorId && (
+                            <div className="mt-2 flex gap-2">
+                                <button className="px-2 py-1 border rounded"
+                                    onClick={() => update.mutate({ id: p.id, content: prompt("Nuevo contenido", p.content) || p.content })}>
+                                    Editar
+                                </button>
+                                <button className="px-2 py-1 border rounded text-red-600"
+                                    onClick={() => deletee.mutate(p.id)}>
+                                    Eliminar
+                                </button>
+                            </div>
+                        )} */}
+                    </div>
+                )
+            })}
 
         </div>
     )

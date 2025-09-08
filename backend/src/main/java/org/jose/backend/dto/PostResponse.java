@@ -5,8 +5,10 @@ import java.time.Instant;
 public class PostResponse {
     private Long id;
     private Long authorId;
+    private String authorPhotoUrl;
     private String authorName; // opcional para evitar otra consulta
     private String content;
+    private String postType;
     private String mediaUrl;
     private Instant createdAt;
     private Instant updatedAt;
@@ -28,6 +30,14 @@ public class PostResponse {
         this.authorId = authorId;
     }
 
+    public String getAuthorPhotoUrl() {
+        return authorPhotoUrl;
+    }
+
+    public void setAuthorPhotoUrl(String authorPhotoUrl) {
+        this.authorPhotoUrl = authorPhotoUrl;
+    }
+
     public String getAuthorName() {
         return authorName;
     }
@@ -42,6 +52,14 @@ public class PostResponse {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getPostType() {
+        return postType;
+    }
+
+    public void setPostType(String postType) {
+        this.postType = postType;
     }
 
     public String getMediaUrl() {

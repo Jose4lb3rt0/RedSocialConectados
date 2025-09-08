@@ -53,7 +53,7 @@ const Navbar: React.FC = () => {
                                 <FaChevronUp className="text-white h-2 w-auto" />
                             )}
                         </div>
-                        <div className={`absolute right-1 top-10 z-10 w-52 ${isUserMenuOpen ? "block" : "hidden"} bg-blue-100 rounded-lg shadow-lg`}>
+                        <div className={`absolute right-1 top-10 z-20 w-52 ${isUserMenuOpen ? "block" : "hidden"} bg-blue-100 rounded-lg shadow-lg`}>
                             <ul className="py-1">
                                 <li>
                                     <div className="w-full flex items-center gap-2 px-4 py-2">
