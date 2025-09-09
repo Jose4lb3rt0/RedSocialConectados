@@ -1,9 +1,20 @@
-import { apiFetch } from "../api/apibase";
+import { apiFetch } from "../api/apibase"
 
-export async function crearPost(payload: { content: string, mediaUrl?: string }) {
+export async function crearPost(
+    payload: { 
+        content: string 
+        file?: File 
+        type?: "text" | "profile_photo" | "banner_photo" 
+    }
+) {
+    const formData = new FormData()
+    formData.append("content", payload.content ?? "")
+    formData.append("type", payload.type ?? "text")
+    if (payload.file) formData.append("file", payload.file)
+
     return apiFetch("/posts", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: formData, 
     })
 }
 

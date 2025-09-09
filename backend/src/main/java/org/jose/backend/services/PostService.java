@@ -15,6 +15,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 
@@ -23,6 +26,8 @@ public class PostService {
     @Autowired private PostRepository postRepo;
     @Autowired private UsuarioRepository userRepo;
     @Autowired private JwtTokenUtil jwt;
+    @Autowired private CloudinaryService cloudinaryService;
+    @Autowired private JwtTokenUtil jwtTokenUtil;
 
     //se usa como dto
     private PostResponse toResp(Post post) {

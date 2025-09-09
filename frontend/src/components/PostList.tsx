@@ -1,11 +1,12 @@
 import { BsThreeDotsVertical } from "react-icons/bs"
-import { useAuth } from "../auth/AuthContext";
-import { useDeletePost, useFeed, useUpdatePost } from "../hooks/usePosts";
-import { useState } from "react";
-import { FaComment, FaEdit, FaShare, FaThumbsUp, FaTrash } from "react-icons/fa";
+import { useAuth } from "../auth/AuthContext"
+import { useDeletePost, useFeed, useUpdatePost } from "../hooks/usePosts"
+import { useState } from "react"
+import { FaComment, FaEdit, FaShare, FaThumbsUp, FaTrash } from "react-icons/fa"
+import CreatePostDialog from "./dialogs/CreatePostDialog"
 
 // Tipo de post según el backend
-type PostType = "text" | "profile_photo" | "banner_photo";
+type PostType = "text" | "profile_photo" | "banner_photo"
 
 export default function PostList() {
     const [isPostOptionsOpen, setIsPostOptionsOpen] = useState<{ [key: string]: boolean }>({})
@@ -26,31 +27,31 @@ export default function PostList() {
                 const postType: PostType = (p.postType ?? p.type) as PostType
 
                 const handleEdit = () => {
-                    const original = (p.content ?? "").trim();
-                    const input = prompt("Nuevo contenido", p.content ?? "");
+                    const original = (p.content ?? "").trim()
+                    const input = prompt("Nuevo contenido", p.content ?? "")
                     // Cancelado
                     if (input === null) {
-                        setIsPostOptionsOpen({ [p.id]: false });
-                        return;
+                        setIsPostOptionsOpen({ [p.id]: false })
+                        return
                     }
-                    const next = input.trim();
+                    const next = input.trim()
 
                     // Sin cambios
                     if (next === original) {
-                        setIsPostOptionsOpen({ [p.id]: false });
-                        return;
+                        setIsPostOptionsOpen({ [p.id]: false })
+                        return
                     }
 
                     // Evitar dejar vacío (post solo imagen o borrado total)
                     if (next.length === 0) {
-                        alert("El contenido no puede quedar vacío.");
-                        setIsPostOptionsOpen({ [p.id]: false });
-                        return;
+                        alert("El contenido no puede quedar vacío.")
+                        setIsPostOptionsOpen({ [p.id]: false })
+                        return
                     }
 
-                    update.mutate({ id: p.id, content: next });
-                    setIsPostOptionsOpen({ [p.id]: false });
-                };
+                    update.mutate({ id: p.id, content: next })
+                    setIsPostOptionsOpen({ [p.id]: false })
+                }
 
                 return (
                     <div key={p.id} className="border rounded">
@@ -99,8 +100,8 @@ export default function PostList() {
                                                 <button
                                                     className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 flex items-center gap-2"
                                                     onClick={() => {
-                                                        deletee.mutate(p.id);
-                                                        setIsPostOptionsOpen({ [p.id]: false });
+                                                        deletee.mutate(p.id)
+                                                        setIsPostOptionsOpen({ [p.id]: false })
                                                     }}
                                                 >
                                                     <FaTrash /> Eliminar
@@ -120,23 +121,9 @@ export default function PostList() {
                             <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaComment /> Comentar</button>
                             <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaShare /> Compartir</button>
                         </div>
-
-                        {/* {user?.id === p.authorId && (
-                            <div className="mt-2 flex gap-2">
-                                <button className="px-2 py-1 border rounded"
-                                    onClick={() => update.mutate({ id: p.id, content: prompt("Nuevo contenido", p.content) || p.content })}>
-                                    Editar
-                                </button>
-                                <button className="px-2 py-1 border rounded text-red-600"
-                                    onClick={() => deletee.mutate(p.id)}>
-                                    Eliminar
-                                </button>
-                            </div>
-                        )} */}
                     </div>
                 )
             })}
-
         </div>
     )
 }

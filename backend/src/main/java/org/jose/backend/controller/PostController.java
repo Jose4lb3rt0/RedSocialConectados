@@ -4,27 +4,47 @@ import jakarta.validation.Valid;
 import org.jose.backend.dto.CreatePostRequest;
 import org.jose.backend.dto.PostResponse;
 import org.jose.backend.dto.UpdatePostRequest;
+import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Post;
+import org.jose.backend.services.ImagenService;
 import org.jose.backend.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
     @Autowired private PostService postService;
+    @Autowired private ImagenService imagenService;
 
-    @PostMapping
+   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PostResponse> create(
-        @Valid @RequestBody Post req
-        //@RequestHeader("Authorization") String auth,
-        //@Valid @RequestBody CreatePostRequest request
-    ) {
-        return ResponseEntity.ok(postService.create(req)); //el service ya esta interferido por la autenticación por securitycontexto
+        //@Valid @RequestBody Post req //@RequestHeader("Authorization") String auth, @Valid @RequestBody CreatePostRequest request
+        @RequestPart("content") String content,
+        @RequestPart(value = "file", required = false) MultipartFile file,
+        @RequestPart(value = "type", required = false) String type
+    ) throws IOException {
+        Post post = new Post();
+
+        if (!content.isBlank()) post.setContent(content);
+        if (type.isBlank()) { post.setType("text"); } else { post.setType(type); }
+        if (file != null) {
+            Imagen imagen = imagenService.uploadImagen(file);
+            post.setMediaUrl(imagen.getImagenUrl());
+        }
+        return ResponseEntity.ok(postService.create(post));
+        //return ResponseEntity.ok(postService.create(content, file)); //el service ya esta interferido por la autenticación por securitycontexto
         //return ResponseEntity.ok(postService.create(auth, request));
     }
 
