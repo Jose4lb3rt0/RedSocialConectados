@@ -4,6 +4,7 @@ import { useDeletePost, useFeed, useUpdatePost } from "../hooks/usePosts"
 import { useState } from "react"
 import { FaComment, FaEdit, FaShare, FaThumbsUp, FaTrash } from "react-icons/fa"
 import CreatePostDialog from "./dialogs/CreatePostDialog"
+import { Link } from "react-router-dom"
 
 // Tipo de post según el backend
 type PostType = "text" | "profile_photo" | "banner_photo"
@@ -44,15 +45,17 @@ export default function PostList() {
                                 <div className="inline-block h-7 w-7 rounded-full mr-2 bg-gray-300" />
                             )}
                             <div className="flex flex-col">
-                                <span className="font-bold" >
-                                    {p.authorName}
-                                    <span className="font-normal">
-                                        {postType === "profile_photo" && " actualizó su foto de perfil"}
-                                        {postType === "banner_photo" && " actualizó su foto de portada"}
-                                        {postType === "text" && " publicó un nuevo post"}
-                                        {/* {p.authorName} · {new Date(p.createdAt).toLocaleString()} */}
+                                <Link to={`/u/${p.authorSlug}`} className="hover:text-blue-900">
+                                    <span className="font-bold" >
+                                        {p.authorName}
+                                        <span className="font-normal">
+                                            {postType === "profile_photo" && " actualizó su foto de perfil"}
+                                            {postType === "banner_photo" && " actualizó su foto de portada"}
+                                            {postType === "text" && " publicó un nuevo post"}
+                                            {/* {p.authorName} · {new Date(p.createdAt).toLocaleString()} */}
+                                        </span>
                                     </span>
-                                </span>
+                                </Link>
                                 <span>{new Date(p.createdAt).toLocaleString()} {p.edited && " · editado"}</span>
                             </div>
 
@@ -100,11 +103,11 @@ export default function PostList() {
                             <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaShare /> Compartir</button>
                         </div>
                     </div>
-                ) 
+                )
             })}
 
-            <CreatePostDialog 
-                open={isEditingPostId !== null} 
+            <CreatePostDialog
+                open={isEditingPostId !== null}
                 onOpenChange={() => setIsEditingPostId(null)}
                 postId={isEditingPostId}
             />

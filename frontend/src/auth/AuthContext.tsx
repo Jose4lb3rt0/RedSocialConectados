@@ -8,6 +8,7 @@ type User = {
     name: string,
     surname: string,
     photoURL?: string,
+    string: string,
 }
 
 type AuthContextType = {

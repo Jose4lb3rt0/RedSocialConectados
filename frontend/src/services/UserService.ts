@@ -18,6 +18,7 @@ type UserProfileRaw = {
     biography?: string | null
     profilePicture?: MediaPictureRaw
     bannerPicture?: MediaPictureRaw
+    slug: string
     dayOfBirth: number
     monthOfBirth: number
     yearOfBirth: number
@@ -32,6 +33,7 @@ export type UserProfile = {
     biography?: string | null
     profilePicture?: { imagenUrl: string } | null
     bannerPicture?: { imagenUrl: string } | null
+    slug: string
     dayOfBirth: number
     monthOfBirth: number
     yearOfBirth: number
@@ -58,6 +60,7 @@ function toUserProfile(raw: UserProfileRaw): UserProfile {
         biography: raw.biography ?? null,
         profilePicture: normalizePicture(raw.profilePicture ?? null),
         bannerPicture: normalizePicture(raw.bannerPicture ?? null),
+        slug: raw.slug,
         dayOfBirth: raw.dayOfBirth,
         monthOfBirth: raw.monthOfBirth,
         yearOfBirth: raw.yearOfBirth,
@@ -88,6 +91,11 @@ export async function verificarCuenta(token: string) {
 
 export async function obtenerPerfil(): Promise<UserProfile> {
     const data = await apiFetch("/users/profile", { method: "GET" })
+    return toUserProfile(data as UserProfileRaw)
+}
+
+export async function obtenerPerfilPorSlug(slug: string): Promise<UserProfile> {
+    const data = await apiFetch(`/users/slug/${encodeURIComponent(slug)}`, { method: "GET" })
     return toUserProfile(data as UserProfileRaw)
 }
 

@@ -32,6 +32,7 @@ public class ProfileController {
         body.put("email", usuario.getEmail());
         body.put("name", usuario.getName());
         body.put("surname", usuario.getSurname());
+        body.put("slug", usuario.getSlug());
         if (usuario.getProfilePicture() != null) { // ojo: no usar "!x == null"
             body.put("profilePicture", usuario.getProfilePicture());
         }
@@ -44,6 +45,11 @@ public class ProfileController {
             "surname", usuario.getSurname(),
             "profilePicture", usuario.getProfilePicture()
         ));*/
+    }
+
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<UserProfileResponse> getProfileBySlug(@PathVariable String slug) throws IOException {
+        return ResponseEntity.ok(usuarioService.getProfileBySlug(slug));
     }
 
     @GetMapping("/profile")

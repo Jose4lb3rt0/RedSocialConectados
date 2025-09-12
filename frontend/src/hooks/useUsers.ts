@@ -1,9 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
     iniciarSesion as iniciarSesionService,
     registrarUsuario as registrarUsuarioService,
     verificarCuenta as verificarCuentaService,
-    actualizarPerfil as actualizarPerfilService
+    actualizarPerfil as actualizarPerfilService,
+    obtenerPerfil,
+    obtenerPerfilPorSlug
 } from "../services/UserService"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
@@ -20,6 +22,11 @@ export function useUsers() {
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const { login } = useAuth()
+
+    const perfil = (slug: string) => useQuery({
+        queryKey: slug ? ["users", slug] : ["profile"],
+        queryFn: () => slug ? obtenerPerfilPorSlug(slug) : obtenerPerfil(),
+    })
 
     const iniciarSesion = useMutation({
         mutationFn: iniciarSesionService,
@@ -74,6 +81,7 @@ export function useUsers() {
         registrarUsuario, 
         verificarCuenta, 
         iniciarSesion, 
-        actualizarPerfil 
+        actualizarPerfil,
+        perfil
     }
 }

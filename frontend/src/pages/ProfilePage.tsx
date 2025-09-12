@@ -10,19 +10,20 @@ import ChangeMyPictureDialog from "@/components/dialogs/ChangeMyPictureDialog"
 import { apiFetch } from "@/api/apibase"
 import { FaMountainSun } from "react-icons/fa6"
 import { useAuth } from "@/auth/AuthContext"
+import { useUsers } from "@/hooks/useUsers"
+import { useParams } from "react-router-dom"
 
 const ProfilePage: React.FC = () => {
-    const { refreshMe } = useAuth()
+    const slug = useParams<{ slug: string }>()
+    const { perfil } = useUsers()
+    const { refreshMe, isAuthenticated } = useAuth()
     const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false)
     const [changeMyPhotoMode, setChangeMyPhotoMode] = useState<"profile" | "banner">("profile")
     const [isChangeMyPictureDialogOpen, setIsChangeMyPictureDialogOpen] = useState(false)
     const queryClient = useQueryClient()
 
     // Query principal para la página (no para el modal)
-    const { data: userProfile, isLoading, error } = useQuery({
-        queryKey: ["profile"],
-        queryFn: obtenerPerfil
-    })
+    const { data: userProfile, isLoading, error } = perfil(slug?.slug || "")
 
     const {
         reset
@@ -67,7 +68,7 @@ const ProfilePage: React.FC = () => {
                 method: "PATCH",
                 body: formData,
             })
-            
+
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["profile"] }),
                 refreshMe()
@@ -96,16 +97,19 @@ const ProfilePage: React.FC = () => {
                 )}
                 {/* Sombreado de negro */}
                 <div className="bg-gradient-to-b from-transparent to-black/30 w-full h-[20%] absolute bottom-0 z-10 rounded-b-md"></div>
-                <button
-                    className="absolute bottom-3 right-5 z-11 flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
-                    onClick={() => {
-                        setChangeMyPhotoMode("banner")
-                        setIsChangeMyPictureDialogOpen(true)
-                    }}
-                >
-                    <FaCamera />
-                    Agregar foto de portada
-                </button>
+
+                {isAuthenticated && (
+                    <button
+                        className="absolute bottom-3 right-5 z-11 flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
+                        onClick={() => {
+                            setChangeMyPhotoMode("banner")
+                            setIsChangeMyPictureDialogOpen(true)
+                        }}
+                    >
+                        <FaCamera />
+                        Agregar foto de portada
+                    </button>
+                )}
 
                 {/* Foto de perfil */}
                 <div className="absolute flex items-center justify-center -bottom-20 left-10 z-11">
@@ -121,15 +125,17 @@ const ProfilePage: React.FC = () => {
                         )}
                     </div>
                     {/* Botón de cambiar foto de perfil */}
-                    <button
-                        className="absolute bottom-2 right-2 bg-gray-500 p-2 rounded-full cursor-pointer hover:bg-gray-600 transition-all duration-300"
-                        onClick={() => {
-                            setChangeMyPhotoMode("profile")
-                            setIsChangeMyPictureDialogOpen(true)
-                        }}
-                    >
-                        <FaCamera className="text-white" />
-                    </button>
+                    {isAuthenticated && (
+                        <button
+                            className="absolute bottom-2 right-2 bg-gray-500 p-2 rounded-full cursor-pointer hover:bg-gray-600 transition-all duration-300"
+                            onClick={() => {
+                                setChangeMyPhotoMode("profile")
+                                setIsChangeMyPictureDialogOpen(true)
+                            }}
+                        >
+                            <FaCamera className="text-white" />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -140,22 +146,24 @@ const ProfilePage: React.FC = () => {
                     </h1>
                     <p className="text-gray-600 font-semibold">XX amigos</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all duration-300">
-                        <FaPlus className="text-white" />
-                        Agregar historia
-                    </button>
+                {isAuthenticated && (
+                    <div className="flex items-center gap-4">
+                        <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all duration-300">
+                            <FaPlus className="text-white" />
+                            Agregar historia
+                        </button>
 
-                    <button
-                        onClick={openEdit}
-                        // onClick={() => setIsEditProfileDialogOpen(true)}
-                        className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
-                    >
-                        <FaPencilAlt className="text-white" />
-                        Editar perfil
-                    </button>
+                        <button
+                            onClick={openEdit}
+                            // onClick={() => setIsEditProfileDialogOpen(true)}
+                            className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
+                        >
+                            <FaPencilAlt className="text-white" />
+                            Editar perfil
+                        </button>
 
-                </div>
+                    </div>
+                )}
             </div>
 
             <EditProfileDialog

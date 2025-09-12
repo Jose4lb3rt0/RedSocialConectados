@@ -98,7 +98,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UserProfileResponse perfilDeUsuario(String slug) throws IOException {
+    public UserProfileResponse getProfileBySlug(String slug) throws IOException {
         Usuario usuario = usuarioRepository.findBySlug(slug).orElseThrow(() -> new RuntimeException("Perfil no encontrado: " + slug));
         return mapToUserProfileResponse(usuario);
     }

@@ -14,5 +14,5 @@ public interface UsuarioService {
     UserProfileResponse actualizarPerfil(String email, EditProfileRequest req);
     UserProfileResponse actualizarFotoPerfil(String email, MultipartFile file) throws IOException;
     UserProfileResponse actualizarFotoPortada(String email, MultipartFile file) throws IOException;
-    UserProfileResponse perfilDeUsuario(String slug) throws IOException;
+    UserProfileResponse getProfileBySlug(String slug) throws IOException;
 }

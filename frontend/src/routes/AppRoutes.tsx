@@ -15,10 +15,12 @@ const AppRoutes: React.FC = () => {
             <Route path="/check-email" element={<CheckEmailPage />} />
             <Route path="/verify-account" element={<VerifyAccountPage />} />
 
+            {/* Pública: ver cualquier perfil por slug */}
+            <Route path="/u/:slug" element={<Layout><ProfilePage /></Layout>} />
+
             <Route element={<RequireGuest />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/u/:slug" element={<ProfilePage />} />
             </Route>
 
             <Route element={<RequireAuth />}>

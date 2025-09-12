@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Pasa de "*" a "**" para incluir subrutas
                         .requestMatchers(HttpMethod.GET, "/api/posts/feed").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/slug/**").permitAll() // público: perfil por slug
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
