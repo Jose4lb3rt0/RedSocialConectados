@@ -49,17 +49,14 @@ public class Usuario {
     @JoinColumn(name = "banner_picture_id", referencedColumnName = "id")
     private Imagen bannerPicture;
 
-    public String getBiography() {
-        return biography;
-    }
-
-    public void setBiography(String biography) {
-        this.biography = biography;
-    }
-
     @Column(nullable = false)
     private boolean isVerified = false;
 
+    @Column(name = "slug",unique = true, nullable = false, length = 100)
+    private String slug;
+
+    public String getBiography() { return biography; }
+    public void setBiography(String biography) { this.biography = biography; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -82,6 +79,9 @@ public class Usuario {
     public void setProfilePicture(Imagen profilePicture) { this.profilePicture = profilePicture; }
     public Imagen getBannerPicture() { return bannerPicture; }
     public void setBannerPicture(Imagen bannerPicture) { this.bannerPicture = bannerPicture; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
+
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean isVerified) { this.isVerified = isVerified; }
 }

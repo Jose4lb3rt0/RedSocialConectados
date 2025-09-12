@@ -2,6 +2,7 @@ package org.jose.backend.services;
 
 import org.jose.backend.dto.EditProfileRequest;
 import org.jose.backend.dto.UserProfileResponse;
+import org.jose.backend.model.Post;
 import org.jose.backend.model.Usuario;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,4 +14,5 @@ public interface UsuarioService {
     UserProfileResponse actualizarPerfil(String email, EditProfileRequest req);
     UserProfileResponse actualizarFotoPerfil(String email, MultipartFile file) throws IOException;
     UserProfileResponse actualizarFotoPortada(String email, MultipartFile file) throws IOException;
+    UserProfileResponse perfilDeUsuario(String slug) throws IOException;
 }

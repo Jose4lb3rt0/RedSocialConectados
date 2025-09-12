@@ -57,11 +57,17 @@ const Navbar: React.FC = () => {
                             <ul className="py-1">
                                 <li>
                                     <div className="w-full flex items-center gap-2 px-4 py-2">
-                                        <img 
-                                            src={user?.profilePicture?.imagenUrl} 
-                                            alt="User Avatar" 
-                                            className="h-10 w-10 rounded-full border-blue-200 border-2" 
-                                        />
+                                        {user?.profilePicture?.imagenUrl ? (
+                                            <img
+                                                src={user.profilePicture.imagenUrl}
+                                                alt="User Avatar"
+                                                className="h-10 w-10 rounded-full border-blue-200 border-2"
+                                            />
+                                        ) : (
+                                            <div className="h-10 w-10 rounded-full border-gray-300 border-2 flex items-center justify-center bg-gray-200">
+                                                <FaUser className="text-gray-500" />
+                                            </div>
+                                        )}
                                         <span className="text-sm truncate">
                                             {user?.name} {user?.surname}
                                         </span>

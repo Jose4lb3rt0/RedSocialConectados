@@ -18,10 +18,10 @@ const AppRoutes: React.FC = () => {
             <Route element={<RequireGuest />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/u/:slug" element={<ProfilePage />} />
             </Route>
 
             <Route element={<RequireAuth />}>
-                {/* <Route path="/feed" element={<div>Mi feed</div>} /> */}
                 <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
             </Route>
         </Routes>

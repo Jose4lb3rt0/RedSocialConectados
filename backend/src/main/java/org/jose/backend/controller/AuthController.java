@@ -9,6 +9,7 @@ import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.jose.backend.security.JwtTokenUtil;
 import org.jose.backend.services.ImagenService;
+import org.jose.backend.services.SlugService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ public class AuthController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
     private ImagenService imagenService;
+    @Autowired private SlugService slugService;
 
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@Valid @RequestBody Usuario usuario) {
@@ -43,13 +45,15 @@ public class AuthController {
                 .body(Map.of("message", "El correo electrónico ya está en uso, por favor intente con otro."));
         }
 
+
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        if (usuario.getSlug() == null || usuario.getSlug().isBlank()) {
+            usuario.setSlug(slugService.generate(usuario.getName(), usuario.getSurname()));
+        }
+
         usuarioRepository.save(usuario);
-
         String token = jwtTokenUtil.generarToken(usuario);
-
-        return ResponseEntity.ok(Map.of("token", token));
-        //return new ResponseEntity<>("Usuario registrado", HttpStatus.CREATED);
+        return ResponseEntity.ok(Map.of("token", token)); //return new ResponseEntity<>("Usuario registrado", HttpStatus.CREATED);
     }
 
     @PostMapping("/login")

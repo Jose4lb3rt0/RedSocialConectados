@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
@@ -24,13 +26,24 @@ public class ProfileController {
     public ResponseEntity<?> me(@RequestHeader("Authorization") String auth) {
         String email = extractEmailFromToken(auth);
         Usuario usuario = usuarioService.getUsuarioPorEmail(email);
-        return ResponseEntity.ok(Map.of(
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("id", usuario.getId());
+        body.put("email", usuario.getEmail());
+        body.put("name", usuario.getName());
+        body.put("surname", usuario.getSurname());
+        if (usuario.getProfilePicture() != null) { // ojo: no usar "!x == null"
+            body.put("profilePicture", usuario.getProfilePicture());
+        }
+        return ResponseEntity.ok(body);
+
+        /*return ResponseEntity.ok(Map.of(
             "id", usuario.getId(),
             "email", usuario.getEmail(),
             "name", usuario.getName(),
             "surname", usuario.getSurname(),
             "profilePicture", usuario.getProfilePicture()
-        ));
+        ));*/
     }
 
     @GetMapping("/profile")

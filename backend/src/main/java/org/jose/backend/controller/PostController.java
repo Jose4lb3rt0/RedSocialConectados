@@ -1,7 +1,6 @@
 package org.jose.backend.controller;
 
 import jakarta.validation.Valid;
-import org.jose.backend.dto.CreatePostRequest;
 import org.jose.backend.dto.PostResponse;
 import org.jose.backend.dto.UpdatePostRequest;
 import org.jose.backend.model.Imagen;
@@ -13,13 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -27,51 +25,82 @@ public class PostController {
     @Autowired private PostService postService;
     @Autowired private ImagenService imagenService;
 
-   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PostResponse> create(
-        //@Valid @RequestBody Post req //@RequestHeader("Authorization") String auth, @Valid @RequestBody CreatePostRequest request
-        @RequestPart("content") String content,
-        @RequestPart(value = "file", required = false) MultipartFile file,
-        @RequestPart(value = "type", required = false) String type
-    ) throws IOException {
-        Post post = new Post();
+   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+   public ResponseEntity<PostResponse> create(
+       @RequestPart(value = "content", required = false) String content,
+       @RequestPart(value = "file", required = false) MultipartFile file,
+       @RequestPart(value = "type", required = false) String type
+   ) throws IOException {
+       final String normalized = content == null ? "" : content.trim();
+       if (normalized.isBlank() && (file == null || file.isEmpty())) {
+           return ResponseEntity.badRequest().build();
+       }
 
-        if (!content.isBlank()) post.setContent(content);
-        if (type.isBlank()) { post.setType("text"); } else { post.setType(type); }
-        if (file != null) {
-            Imagen imagen = imagenService.uploadImagen(file);
-            post.setMediaUrl(imagen.getImagenUrl());
-        }
-        return ResponseEntity.ok(postService.create(post));
-        //return ResponseEntity.ok(postService.create(content, file)); //el service ya esta interferido por la autenticación por securitycontexto
-        //return ResponseEntity.ok(postService.create(auth, request));
+       Post post = new Post();
+       post.setContent(normalized);
+       post.setType((type == null || type.isBlank()) ? "text" : type);
+
+       if (file != null && !file.isEmpty()) {
+           Imagen imagen = imagenService.uploadImagen(file);
+           post.setMediaUrl(imagen.getImagenUrl());
+       }
+       return ResponseEntity.ok(postService.create(post));
+   }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostResponse> findPost(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPost(postId));
     }
 
-    @GetMapping("/feed")
+    @GetMapping("/feed") //home
     public Page<PostResponse> feed(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size) {
         return postService.feed(page, size);
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/{userId}") //perfil
     public Page<PostResponse> userPosts(@PathVariable Long userId,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "10") int size) {
         return postService.userPosts(userId, page, size);
     }
 
-    @PatchMapping("/{postId}")
-    public PostResponse update(/*@RequestHeader("Authorization") String auth,*/
-                               @PathVariable Long postId,
-                               @Valid @RequestBody UpdatePostRequest req) throws AccessDeniedException {
-        return postService.update(/*auth,*/ postId, req);
+    @PatchMapping(
+            path = "/{postId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PostResponse> updateJson(
+            @PathVariable Long postId,
+            @RequestBody UpdatePostRequest req
+    ) throws AccessDeniedException {
+        return ResponseEntity.ok(postService.update(postId, req));
+    }
+
+    @PatchMapping(
+            path = "/{postId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PostResponse> updateMultipart(
+            @PathVariable Long postId,
+            @RequestPart(value = "content", required = false) String content,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart(value = "removeMedia", required = false) Boolean removeMedia
+    ) throws IOException, AccessDeniedException {
+        UpdatePostRequest req = new UpdatePostRequest();
+        if (content != null) req.setContent(content);
+        if (Boolean.TRUE.equals(removeMedia)) req.setRemoveMedia(true);
+
+        if (file != null && !file.isEmpty()) {
+            Imagen img = imagenService.uploadImagen(file);
+            req.setMediaUrl(img.getImagenUrl());
+        }
+
+        return ResponseEntity.ok(postService.update(postId, req));
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> delete(/*@RequestHeader("Authorization") String auth,*/
-                                       @PathVariable Long postId) throws AccessDeniedException {
-        postService.delete(/*auth, */postId);
+    public ResponseEntity<Void> delete(@PathVariable Long postId) throws AccessDeniedException {
+        postService.delete(postId);
         return ResponseEntity.noContent().build();
     }
 }

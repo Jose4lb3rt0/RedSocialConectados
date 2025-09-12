@@ -1,4 +1,4 @@
-import { FaCamera, FaPencilAlt, FaPlus } from "react-icons/fa"
+import { FaCamera, FaPencilAlt, FaPlus, FaUser } from "react-icons/fa"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { editProfileSchema, type EditProfileFormData } from "@/schemas/userSchemas"
@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import EditProfileDialog from "@/components/dialogs/EditProfileDialog"
 import ChangeMyPictureDialog from "@/components/dialogs/ChangeMyPictureDialog"
 import { apiFetch } from "@/api/apibase"
+import { FaMountainSun } from "react-icons/fa6"
 import { useAuth } from "@/auth/AuthContext"
 
 const ProfilePage: React.FC = () => {
@@ -82,13 +83,17 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="w-full max-w-6xl mx-auto">
             {/* Banner */}
-            <div className="bg-blue-200 w-full h-50 relative rounded-b-md">
+            <div className={`${userProfile?.bannerPicture?.imagenUrl ? '' : 'bg-blue-300'} w-full h-50 relative rounded-b-md`}>
                 {/* Imagen de banner */}
-                <img
-                    src={userProfile?.bannerPicture?.imagenUrl || "/placeholder-banner.png"}
-                    alt="Banner"
-                    className="w-full h-full object-cover rounded-b-md"
-                />
+                {userProfile?.bannerPicture?.imagenUrl ? (
+                    <img
+                        src={userProfile.bannerPicture.imagenUrl}
+                        alt="Banner"
+                        className="w-full h-full object-cover rounded-b-md"
+                    />
+                ) : (
+                    <FaMountainSun className="absolute bottom-0 right-5 w-36 h-auto text-blue-200/80 pointer-events-none z-0" />
+                )}
                 {/* Sombreado de negro */}
                 <div className="bg-gradient-to-b from-transparent to-black/30 w-full h-[20%] absolute bottom-0 z-10 rounded-b-md"></div>
                 <button
@@ -104,12 +109,16 @@ const ProfilePage: React.FC = () => {
 
                 {/* Foto de perfil */}
                 <div className="absolute flex items-center justify-center -bottom-20 left-10 z-11">
-                    <div className="relative flex items-center justify-center w-30 h-30 rounded-full overflow-hidden bg-white">
-                        <img
-                            src={userProfile?.profilePicture?.imagenUrl || "/placeholder-avatar.png"}
-                            alt="Foto de perfil"
-                            className="w-[95%] h-[95%] object-cover bg-blue-300 rounded-full"
-                        />
+                    <div className={`relative flex items-center justify-center w-30 h-30 rounded-full overflow-hidden ${userProfile?.profilePicture?.imagenUrl ? 'bg-white' : 'bg-gray-200'}`}>
+                        {userProfile?.profilePicture?.imagenUrl ? (
+                            <img
+                                src={userProfile.profilePicture.imagenUrl}
+                                alt="Foto de perfil"
+                                className="w-[95%] h-[95%] object-cover bg-blue-300 rounded-full"
+                            />
+                        ) : (
+                            <FaUser className="w-[55%] h-[55%] text-gray-400" />
+                        )}
                     </div>
                     {/* Botón de cambiar foto de perfil */}
                     <button

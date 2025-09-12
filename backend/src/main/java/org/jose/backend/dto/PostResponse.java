@@ -7,6 +7,7 @@ public class PostResponse {
     private Long authorId;
     private String authorPhotoUrl;
     private String authorName; // opcional para evitar otra consulta
+    private String authorSlug;
     private String content;
     private String postType;
     private String mediaUrl;
@@ -44,6 +45,14 @@ public class PostResponse {
 
     public void setAuthorName(String authorName) {
         this.authorName = authorName;
+    }
+
+    public String getAuthorSlug() {
+        return authorSlug;
+    }
+
+    public void setAuthorSlug(String authorSlug) {
+        this.authorSlug = authorSlug;
     }
 
     public String getContent() {

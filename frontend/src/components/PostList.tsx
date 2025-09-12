@@ -13,6 +13,7 @@ export default function PostList() {
     const { data, isLoading } = useFeed()
     const deletee = useDeletePost()
     const update = useUpdatePost()
+    const [isEditingPostId, setIsEditingPostId] = useState<number | null>(null)
     const { user } = useAuth()
 
     if (isLoading) {
@@ -21,40 +22,17 @@ export default function PostList() {
 
     const page = data
 
+    const handleEditPost = (postId: number) => {
+        setIsEditingPostId(postId)
+    }
+
     return (
         <div className="mt-4 w-full max-w-lg mx-auto space-y-3">
             {page?.content?.map((p: any) => {
                 const postType: PostType = (p.postType ?? p.type) as PostType
 
-                const handleEdit = () => {
-                    const original = (p.content ?? "").trim()
-                    const input = prompt("Nuevo contenido", p.content ?? "")
-                    // Cancelado
-                    if (input === null) {
-                        setIsPostOptionsOpen({ [p.id]: false })
-                        return
-                    }
-                    const next = input.trim()
-
-                    // Sin cambios
-                    if (next === original) {
-                        setIsPostOptionsOpen({ [p.id]: false })
-                        return
-                    }
-
-                    // Evitar dejar vacío (post solo imagen o borrado total)
-                    if (next.length === 0) {
-                        alert("El contenido no puede quedar vacío.")
-                        setIsPostOptionsOpen({ [p.id]: false })
-                        return
-                    }
-
-                    update.mutate({ id: p.id, content: next })
-                    setIsPostOptionsOpen({ [p.id]: false })
-                }
-
                 return (
-                    <div key={p.id} className="border rounded">
+                    <div key={p.id} id={`post-${p.id}`} className="border rounded">
                         <div className="flex items-center text-sm text-gray-600 p-3">
                             {p.authorPhotoUrl ? (
                                 <img
@@ -91,7 +69,7 @@ export default function PostList() {
                                             <li>
                                                 <button
                                                     className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                    onClick={handleEdit}
+                                                    onClick={() => handleEditPost(p.id)}
                                                 >
                                                     <FaEdit /> Editar
                                                 </button>
@@ -122,8 +100,14 @@ export default function PostList() {
                             <button className="hover:bg-gray-100 px-4 py-2 flex items-center gap-2 justify-center"><FaShare /> Compartir</button>
                         </div>
                     </div>
-                )
+                ) 
             })}
+
+            <CreatePostDialog 
+                open={isEditingPostId !== null} 
+                onOpenChange={() => setIsEditingPostId(null)}
+                postId={isEditingPostId}
+            />
         </div>
     )
 }

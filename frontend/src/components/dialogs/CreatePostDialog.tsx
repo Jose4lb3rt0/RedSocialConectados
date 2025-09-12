@@ -5,53 +5,94 @@ import { FaPhotoVideo } from "react-icons/fa"
 import { useForm } from "react-hook-form"
 import { postSchema, type PostFormData } from "@/schemas/postSchemas"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useCreatePost } from "@/hooks/usePosts"
-import { useRef, useState, type ChangeEvent } from "react"
+import { useCreatePost, usePost, useUpdatePost } from "@/hooks/usePosts"
+import { useEffect, useRef, useState, type ChangeEvent } from "react"
 
 type CreatePostDialog = {
     open: boolean
     onOpenChange: (open: boolean) => void
+    postId: number | null
 }
 
-const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange }) => {
+const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange, postId }) => {
     const { user } = useAuth()
+    const post = usePost(postId)
     const createPost = useCreatePost()
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<PostFormData>({
+    const updatePost = useUpdatePost()
+
+    const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<PostFormData>({
         resolver: zodResolver(postSchema),
+        defaultValues: { content: "", media: undefined },
+        mode: "onChange",
     })
 
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+    const [originalMediaUrl, setOriginalMediaUrl] = useState<string | null>(null)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const [removeMedia, setRemoveMedia] = useState(false)
+    const prevUrlRef = useRef<string | null>(null)
+
     const onCreatePost = (data: PostFormData) => {
-        const file = fileInputRef.current?.files?.[0] ?? undefined
+        const content = (data.content ?? "").trim()
+
+        // Editar post
+        if (postId && postId > 0) {
+            const noContentChange = content === (post.data?.content ?? "").trim()
+            const noMediaChange = !selectedFile && !removeMedia
+            if (noContentChange && noMediaChange) {
+                onOpenChange(false)
+                return
+            }
+            const payload: any = { id: postId }
+            if (!noContentChange) payload.content = content
+            if (selectedFile) payload.file = selectedFile
+            if (removeMedia) payload.removeMedia = true
+
+            updatePost.mutate(payload, {
+                onSuccess: () => {
+                    reset({ content: "" })
+                    clearImage()
+                    onOpenChange(false)
+                }
+            })
+            return
+        }
+
+        // Crear post
+        if (!content && !selectedFile) return
         createPost.mutate(
-            { content: data.content ?? "", file, type: "text" },
+            { content, file: selectedFile ?? undefined, type: "text" },
             {
                 onSuccess: () => {
-                    reset({ content: "" })     // limpia textarea
-                    clearImage()               // limpia input file y preview
-                    onOpenChange(false)        // cierra el diálogo
+                    reset({ content: "" })
+                    clearImage()
+                    onOpenChange(false)
                 }
             }
         )
-        onOpenChange(false)
     }
 
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-    const fileInputRef = useRef<HTMLInputElement | null>(null)
-    const prevUrlRef = useRef<string | null>(null)
-
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+        const file = e.target.files?.[0] || null
         if (file) {
             const url = URL.createObjectURL(file)
-            if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current) // esto libera memoria
+            if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current)
             prevUrlRef.current = url
             setPreviewUrl(url)
+            setSelectedFile(file)
+            setRemoveMedia(false)
+            // hace válido "solo foto" (nuevo archivo)
+            setValue("media", file, { shouldValidate: true })
         } else {
             if (prevUrlRef.current) {
                 URL.revokeObjectURL(prevUrlRef.current)
                 prevUrlRef.current = null
             }
-            setPreviewUrl(null)
+            setPreviewUrl(originalMediaUrl)
+            setSelectedFile(null)
+            // vuelve al estado según media existente (si la hay)
+            setValue("media", originalMediaUrl ? true : undefined, { shouldValidate: true })
         }
     }
 
@@ -60,16 +101,38 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange }) =>
             URL.revokeObjectURL(prevUrlRef.current)
             prevUrlRef.current = null
         }
+        setSelectedFile(null)
         setPreviewUrl(null)
+        setOriginalMediaUrl(null)
+        setRemoveMedia(false)
+        setValue("media", undefined, { shouldValidate: true })
         if (fileInputRef.current) fileInputRef.current.value = ""
     }
 
+    useEffect(() => {
+        if (postId && post.data) {
+            reset({ content: post.data.content ?? "", media: post.data.mediaUrl ? true : undefined })
+            setOriginalMediaUrl(post.data.mediaUrl ?? null)
+            setPreviewUrl(post.data.mediaUrl ?? null)
+            setSelectedFile(null)
+            setRemoveMedia(false)
+            if (fileInputRef.current) fileInputRef.current.value = ""
+        } else if (!postId) {
+            reset({ content: "", media: undefined })
+            setOriginalMediaUrl(null)
+            setPreviewUrl(null)
+            setSelectedFile(null)
+            setRemoveMedia(false)
+            if (fileInputRef.current) fileInputRef.current.value = ""
+        }
+    }, [postId, post.data, reset])
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="w-[95vw] sm:max-w-xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Crear Publicación</DialogTitle>
-                    <DialogDescription>Aquí puedes crear el contenido de tu publicación.</DialogDescription>
+                    <DialogTitle>{postId ? "Editar Publicación" : "Crear Publicación"}</DialogTitle>
+                    <DialogDescription>Aquí puedes {postId ? "editar" : "crear"} tu publicación.</DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onCreatePost)}>
@@ -90,6 +153,8 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange }) =>
                             id="file-input"
                             onChange={handleFileChange}
                         />
+                        {/* registra el campo virtual "media" para validación */}
+                        <input type="hidden" {...register("media")} />
 
                         {previewUrl && (
                             <div className="relative">
@@ -100,7 +165,26 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange }) =>
                                 />
                                 <button
                                     type="button"
-                                    onClick={clearImage}
+                                    onClick={() => {
+                                        if (selectedFile) {
+                                            // descartar archivo nuevo y volver a la original
+                                            if (prevUrlRef.current) {
+                                                URL.revokeObjectURL(prevUrlRef.current)
+                                                prevUrlRef.current = null
+                                            }
+                                            setSelectedFile(null)
+                                            setPreviewUrl(originalMediaUrl)
+                                            setRemoveMedia(false)
+                                            if (fileInputRef.current) fileInputRef.current.value = ""
+                                            // sigue contando la media existente
+                                            setValue("media", originalMediaUrl ? true : undefined, { shouldValidate: true })
+                                        } else {
+                                            // marcar para eliminar imagen existente
+                                            setPreviewUrl(null)
+                                            setRemoveMedia(true)
+                                            setValue("media", undefined, { shouldValidate: true })
+                                        }
+                                    }}
                                     className="shrink-0 p-2 bg-gray-200/50 hover:bg-gray-300/50 cursor-pointer rounded-full absolute top-2 right-2"
                                 >
                                     <IoIosClose className="text-2xl" />
@@ -116,19 +200,18 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange }) =>
                                 </label>
                             </div>
                         </div>
-
                     </div>
+
                     <DialogFooter>
                         <button
                             type="submit"
-                            disabled={createPost.isPending}
-                            className="cursor-pointer mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            disabled={createPost.isPending || updatePost.isPending}
+                            className="cursor-pointer mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                         >
-                            Publicar
+                            {postId ? (updatePost.isPending ? "Guardando..." : "Guardar") : (createPost.isPending ? "Publicando..." : "Publicar")}
                         </button>
                     </DialogFooter>
                 </form>
-
             </DialogContent>
         </Dialog>
     )

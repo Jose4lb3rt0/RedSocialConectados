@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -94,5 +95,11 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getMonthOfBirth(),
                 usuario.getYearOfBirth()
         );
+    }
+
+    @Override
+    public UserProfileResponse perfilDeUsuario(String slug) throws IOException {
+        Usuario usuario = usuarioRepository.findBySlug(slug).orElseThrow(() -> new RuntimeException("Perfil no encontrado: " + slug));
+        return mapToUserProfileResponse(usuario);
     }
 }
