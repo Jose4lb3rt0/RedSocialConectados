@@ -1,7 +1,8 @@
 package org.jose.backend.services;
 
-import org.jose.backend.dto.PostResponse;
-import org.jose.backend.dto.UpdatePostRequest;
+import org.jose.backend.dto.Post.CreatePostRequest;
+import org.jose.backend.dto.Post.PostResponse;
+import org.jose.backend.dto.Post.UpdatePostRequest;
 import org.jose.backend.model.Post;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.PostRepository;
@@ -10,13 +11,16 @@ import org.jose.backend.security.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -25,6 +29,8 @@ public class PostServiceImpl implements PostService {
     @Autowired private JwtTokenUtil jwt;
     @Autowired private CloudinaryService cloudinaryService;
     @Autowired private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     private PostResponse toResp(Post post) {
         PostResponse resp = new PostResponse();
@@ -46,22 +52,33 @@ public class PostServiceImpl implements PostService {
 
     private String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) { // fix: usa ||
+        if (auth == null || auth.getName() == null) {
             throw new IllegalStateException("No hay usuario autenticado en el contexto.");
         }
         return auth.getName();
     }
 
     @Override
-    public PostResponse create(Post post) {
+    @Transactional
+    public PostResponse create(CreatePostRequest request) {
         String email = getCurrentUserEmail(); //String email = jwt.extraerUsuarioDelToken(bearer.replace("Bearer ", ""));
-        Usuario author = userRepo.findByEmail(email).orElseThrow();
+        Usuario author = usuarioRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        String content = request != null && request.getContent() != null ? request.getContent() : "";
+        String file = request != null && request.getMediaUrl() != null ? request.getMediaUrl() : "";
+        String type = request != null && request.getType() != null ? request.getType() : "";
+
+        boolean hasText = !content.isBlank();
+        boolean hasFile = file != null && !file.isEmpty();
+
+        if (!hasText && !hasFile) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe incluir texto o imagen.");
+        }
 
         Post p = new Post();
         p.setAuthor(author);
-        p.setType(post.getType());
-        p.setContent(post.getContent().trim());
-        p.setMediaUrl(post.getMediaUrl());
+        p.setType(type);
+        p.setContent(content);
+        p.setMediaUrl(file);
         postRepo.save(p);
         return toResp(p);
     }

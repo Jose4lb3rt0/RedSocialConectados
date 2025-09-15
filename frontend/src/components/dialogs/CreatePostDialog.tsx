@@ -82,8 +82,7 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange, post
             setPreviewUrl(url)
             setSelectedFile(file)
             setRemoveMedia(false)
-            // hace válido "solo foto" (nuevo archivo)
-            setValue("media", file, { shouldValidate: true })
+            setValue("media", file, { shouldValidate: true }) // hace válido "solo foto" (nuevo archivo)
         } else {
             if (prevUrlRef.current) {
                 URL.revokeObjectURL(prevUrlRef.current)
@@ -91,8 +90,7 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange, post
             }
             setPreviewUrl(originalMediaUrl)
             setSelectedFile(null)
-            // vuelve al estado según media existente (si la hay)
-            setValue("media", originalMediaUrl ? true : undefined, { shouldValidate: true })
+            setValue("media", originalMediaUrl ? true : undefined, { shouldValidate: true }) // vuelve al estado según media existente si la hay
         }
     }
 
@@ -153,7 +151,6 @@ const CreatePostDialog: React.FC<CreatePostDialog> = ({ open, onOpenChange, post
                             id="file-input"
                             onChange={handleFileChange}
                         />
-                        {/* registra el campo virtual "media" para validación */}
                         <input type="hidden" {...register("media")} />
 
                         {previewUrl && (

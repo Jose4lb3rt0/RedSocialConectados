@@ -1,6 +1,7 @@
 package org.jose.backend.services;
 
 import org.jose.backend.dto.EditProfileRequest;
+import org.jose.backend.dto.Post.CreatePostRequest;
 import org.jose.backend.dto.UserProfileResponse;
 import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Post;
@@ -57,7 +58,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setProfilePicture(imagen);
         usuarioRepository.save(usuario);
 
-        Post post = new Post();
+        CreatePostRequest post = new CreatePostRequest();
         post.setType("profile_photo");
         post.setContent("");
         post.setMediaUrl(imagen.getImagenUrl());
@@ -74,7 +75,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setBannerPicture(imagen);
         usuarioRepository.save(usuario);
 
-        Post post = new Post();
+        CreatePostRequest post = new CreatePostRequest();
         post.setType("banner_photo");
         post.setContent("");
         post.setMediaUrl(imagen.getImagenUrl());

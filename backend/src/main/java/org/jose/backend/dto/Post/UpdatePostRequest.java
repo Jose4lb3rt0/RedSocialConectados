@@ -1,4 +1,4 @@
-package org.jose.backend.dto;
+package org.jose.backend.dto.Post;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,7 +8,7 @@ public class UpdatePostRequest {
     @Size(max = 3000)
     private String content;
     private String mediaUrl;
-    private Boolean removeMedia; // true para quitar imagen actual
+    private Boolean removeMedia;
 
     public @NotBlank @Size(max = 3000) String getContent() {
         return content;

@@ -1,8 +1,8 @@
 package org.jose.backend.controller;
 
-import jakarta.validation.Valid;
-import org.jose.backend.dto.PostResponse;
-import org.jose.backend.dto.UpdatePostRequest;
+import org.jose.backend.dto.Post.CreatePostRequest;
+import org.jose.backend.dto.Post.PostResponse;
+import org.jose.backend.dto.Post.UpdatePostRequest;
 import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Post;
 import org.jose.backend.services.ImagenService;
@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -36,7 +35,7 @@ public class PostController {
            return ResponseEntity.badRequest().build();
        }
 
-       Post post = new Post();
+       CreatePostRequest post = new CreatePostRequest();
        post.setContent(normalized);
        post.setType((type == null || type.isBlank()) ? "text" : type);
 
