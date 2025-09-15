@@ -3,6 +3,7 @@ package org.jose.backend.services;
 import org.jose.backend.dto.Post.CreatePostRequest;
 import org.jose.backend.dto.Post.PostResponse;
 import org.jose.backend.dto.Post.UpdatePostRequest;
+import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Post;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.PostRepository;
@@ -19,18 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 
 @Service
 public class PostServiceImpl implements PostService {
+
     @Autowired private PostRepository postRepo;
-    @Autowired private UsuarioRepository userRepo;
-    @Autowired private JwtTokenUtil jwt;
-    @Autowired private CloudinaryService cloudinaryService;
-    @Autowired private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private ImagenService imagenService;
+    @Autowired private CurrentUserService currentUserService;
 
     private PostResponse toResp(Post post) {
         PostResponse resp = new PostResponse();
@@ -50,35 +50,24 @@ public class PostServiceImpl implements PostService {
         return resp;
     }
 
-    private String getCurrentUserEmail() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            throw new IllegalStateException("No hay usuario autenticado en el contexto.");
-        }
-        return auth.getName();
-    }
-
     @Override
     @Transactional
-    public PostResponse create(CreatePostRequest request) {
-        String email = getCurrentUserEmail(); //String email = jwt.extraerUsuarioDelToken(bearer.replace("Bearer ", ""));
-        Usuario author = usuarioRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    public PostResponse create(CreatePostRequest request, MultipartFile file) throws IOException {
+        Usuario author = currentUserService.getUser();
         String content = request != null && request.getContent() != null ? request.getContent() : "";
-        String file = request != null && request.getMediaUrl() != null ? request.getMediaUrl() : "";
         String type = request != null && request.getType() != null ? request.getType() : "";
-
         boolean hasText = !content.isBlank();
         boolean hasFile = file != null && !file.isEmpty();
-
-        if (!hasText && !hasFile) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe incluir texto o imagen.");
-        }
+        if (!hasText && !hasFile) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe incluir texto o imagen.");
 
         Post p = new Post();
         p.setAuthor(author);
         p.setType(type);
         p.setContent(content);
-        p.setMediaUrl(file);
+        if (hasFile) {
+            Imagen img = imagenService.uploadImagen(file);
+            p.setImagen(img);
+        }
         postRepo.save(p);
         return toResp(p);
     }
@@ -100,24 +89,50 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostResponse update(Long postId, UpdatePostRequest request) throws AccessDeniedException {
-        String email = getCurrentUserEmail();
-        Post post = postRepo.findById(postId).orElseThrow();
-
+    @Transactional
+    public PostResponse update(Long postId, UpdatePostRequest request) throws IOException {
+        String email = currentUserService.getEmail();
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post no encontrado"));
         if (!post.getAuthor().getEmail().equals(email)) throw new AccessDeniedException("No eres el autor");
-        if (request.getContent() != null) post.setContent(request.getContent().trim());
-        if (Boolean.TRUE.equals(request.getRemoveMedia())) post.setMediaUrl(null);
-        if (request.getMediaUrl() != null) post.setMediaUrl(request.getMediaUrl().trim());
+
+        boolean changed = false;
+
+        if (request != null && request.getContent() != null) {
+            String content = request.getContent().trim();
+            post.setContent(content.isBlank() ? null : content);
+            changed = true;
+        }
+
+        if (Boolean.TRUE.equals(request != null ? request.getRemoveMedia() : null)) {
+            if (post.getImagen() != null) {
+                imagenService.deleteImagen(post.getImagen());
+                post.setImagen(null);
+                changed = true;
+            }
+        }
+
+        if (!changed) {
+            return toResp(post);
+        }
+
         post.setEdited(true);
         post.setUpdatedAt(Instant.now());
         return toResp(postRepo.save(post));
     }
 
     @Override
-    public void delete(Long postId) throws AccessDeniedException {
-        String email = getCurrentUserEmail();
-        Post post = postRepo.findById(postId).orElseThrow();
+    public void delete(Long postId) throws IOException {
+        String email = currentUserService.getEmail();
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post no encontrado"));
         if (!post.getAuthor().getEmail().equals(email)) throw new AccessDeniedException("No eres el autor.");
+
+        if (post.getImagen() != null) {
+            imagenService.deleteImagen(post.getImagen());
+            post.setImagen(null);
+        }
+
         post.setDeleted(true);
         postRepo.save(post);
     }

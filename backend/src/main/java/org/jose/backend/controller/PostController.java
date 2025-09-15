@@ -41,9 +41,9 @@ public class PostController {
 
        if (file != null && !file.isEmpty()) {
            Imagen imagen = imagenService.uploadImagen(file);
-           post.setMediaUrl(imagen.getImagenUrl());
        }
-       return ResponseEntity.ok(postService.create(post));
+
+       return ResponseEntity.ok(postService.create(post, file));
    }
 
     @GetMapping("/{postId}")
@@ -71,7 +71,7 @@ public class PostController {
     public ResponseEntity<PostResponse> updateJson(
             @PathVariable Long postId,
             @RequestBody UpdatePostRequest req
-    ) throws AccessDeniedException {
+    ) throws IOException {
         return ResponseEntity.ok(postService.update(postId, req));
     }
 
@@ -98,7 +98,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> delete(@PathVariable Long postId) throws AccessDeniedException {
+    public ResponseEntity<Void> delete(@PathVariable Long postId) throws IOException {
         postService.delete(postId);
         return ResponseEntity.noContent().build();
     }

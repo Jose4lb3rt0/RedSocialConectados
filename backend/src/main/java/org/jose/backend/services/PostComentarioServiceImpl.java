@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -32,6 +33,7 @@ public class PostComentarioServiceImpl implements PostComentarioService {
     @Autowired private PostRepository postRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ImagenService imagenService;
+    @Autowired private CurrentUserService currentUserService;
 
     private String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -60,37 +62,31 @@ public class PostComentarioServiceImpl implements PostComentarioService {
     @Override
     @Transactional
     public PostCommentResponse create(Long postId, CreatePostCommentRequest request, MultipartFile file) throws IOException {
-        String email = getCurrentUserEmail();
-        Usuario author = usuarioRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        Post post = postRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post no encontrado."));
+        Usuario author = currentUserService.getUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post no encontrado."));
         String comment = request != null && request.getComment() != null ? request.getComment() : "";
-
         boolean hasText = !comment.isBlank();
         boolean hasFile = file != null && !file.isEmpty();
+        if (!hasText && !hasFile) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe incluir texto o imagen.");
 
-        if (!hasText && !hasFile) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe incluir texto o imagen.");
-        }
-
-        PostComentario nuevoComentario = new PostComentario();
-        nuevoComentario.setAuthor(author);
-        nuevoComentario.setPost(post);
-        nuevoComentario.setComment(comment);
-
+        PostComentario nuevo = new PostComentario();
+        nuevo.setAuthor(author);
+        nuevo.setPost(post);
+        nuevo.setComment(comment);
         if (hasFile) {
             Imagen img = imagenService.uploadImagen(file);
-            nuevoComentario.setImagen(img);
+            nuevo.setImagen(img);
         }
-
-        return toResp(postComentarioRepository.save(nuevoComentario));
+        return toResp(postComentarioRepository.save(nuevo));
     }
 
     @Override
     @Transactional
     public PostCommentResponse update(Long commentId, UpdatePostCommentRequest request, MultipartFile file) throws IOException, AccessDeniedException {
-        String email = getCurrentUserEmail();
-        PostComentario c = postComentarioRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comentario no encontrado"));
-
+        String email = currentUserService.getEmail();
+        PostComentario c = postComentarioRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comentario no encontrado"));
         if (!c.getAuthor().getEmail().equals(email)) throw new AccessDeniedException("No eres el autor");
 
         boolean changed = false;
@@ -114,6 +110,7 @@ public class PostComentarioServiceImpl implements PostComentarioService {
         }
 
         c.setEdited(true);
+        c.setUpdatedAt(Instant.now());
         return toResp(postComentarioRepository.save(c));
     }
 
@@ -133,9 +130,9 @@ public class PostComentarioServiceImpl implements PostComentarioService {
     @Override
     @Transactional
     public void delete(Long commentId) throws AccessDeniedException, IOException {
-        String email = getCurrentUserEmail();
-        PostComentario c = postComentarioRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comentario no encontrado"));
-
+        String email = currentUserService.getEmail();
+        PostComentario c = postComentarioRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comentario no encontrado"));
         if (!c.getAuthor().getEmail().equals(email)) throw new AccessDeniedException("No eres el autor.");
 
         if (c.getImagen() != null) {

@@ -61,8 +61,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         CreatePostRequest post = new CreatePostRequest();
         post.setType("profile_photo");
         post.setContent("");
-        post.setMediaUrl(imagen.getImagenUrl());
-        postService.create(post);
+        //post.setMediaUrl(imagen.getImagenUrl());
+        postService.create(post, (MultipartFile) file);
 
         return mapToUserProfileResponse(usuario);
     }
@@ -78,8 +78,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         CreatePostRequest post = new CreatePostRequest();
         post.setType("banner_photo");
         post.setContent("");
-        post.setMediaUrl(imagen.getImagenUrl());
-        postService.create(post);
+        //post.setMediaUrl(imagen.getImagenUrl());
+        postService.create(post, (MultipartFile) file);
 
         return mapToUserProfileResponse(usuario);
     }
