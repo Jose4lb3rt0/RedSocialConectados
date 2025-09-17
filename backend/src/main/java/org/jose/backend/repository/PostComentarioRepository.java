@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostComentarioRepository extends JpaRepository<PostComentario, Long> {
     Page<PostComentario> findByPostIdOrderByCreatedAtDesc(Long postId, Pageable pageable);
+    long countByPostId(Long postId);
 }

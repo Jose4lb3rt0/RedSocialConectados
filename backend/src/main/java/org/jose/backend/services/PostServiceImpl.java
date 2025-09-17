@@ -6,6 +6,7 @@ import org.jose.backend.dto.Post.UpdatePostRequest;
 import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Post;
 import org.jose.backend.model.Usuario;
+import org.jose.backend.repository.PostComentarioRepository;
 import org.jose.backend.repository.PostRepository;
 import org.jose.backend.repository.UsuarioRepository;
 import org.jose.backend.security.JwtTokenUtil;
@@ -31,6 +32,7 @@ public class PostServiceImpl implements PostService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ImagenService imagenService;
     @Autowired private CurrentUserService currentUserService;
+    @Autowired private PostComentarioRepository postComentarioRepository;
 
     private PostResponse toResp(Post post) {
         PostResponse resp = new PostResponse();
@@ -44,6 +46,7 @@ public class PostServiceImpl implements PostService {
         resp.setContent(post.getContent());
         resp.setPostType(post.getType());
         resp.setMediaUrl(post.getMediaUrl());
+        resp.setCommentsCount(postComentarioRepository.countByPostId(post.getId()));
         resp.setCreatedAt(post.getCreatedAt());
         resp.setUpdatedAt(post.getUpdatedAt());
         resp.setEdited(post.isEdited());

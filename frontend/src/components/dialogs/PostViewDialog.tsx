@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form"
 import { postCommentSchema, type PostCommentFormData } from "@/schemas/postSchemas"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FaUser } from "react-icons/fa"
+import { Link } from "react-router-dom"
 
 type PostViewDialogProps = {
     postId: number | null
@@ -144,7 +145,9 @@ const PostViewDialog: React.FC<PostViewDialogProps> = ({ postId, open, onOpenCha
                                                 <div className="flex flex-col space-y-1">
                                                     <div className="flex items-center space-x-2 relative">
                                                         <div className="w-full flex flex-col p-2 bg-gray-100 rounded">
-                                                            <span className="text-sm font-semibold">{c.authorName}</span>
+                                                            <Link to={`/u/${c.authorSlug}`} className=" hover:text-blue-600">
+                                                                <span className="text-sm font-semibold">{c.authorName}</span>
+                                                            </Link>
                                                             <span className="text-sm">{c.comment}</span>
                                                         </div>
 

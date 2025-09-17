@@ -89,8 +89,13 @@ export function useCreateComment(postId: number) {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (data: { comment: string; media?: File }) => crearComentario(postId, data),
-        onSuccess: () => {
-            //para invalidar cualquier página/tamaño de los comentarios de este post
+        onMutate: async () => {
+            applyCommentsDelta(queryClient, postId, +1)
+        },
+        onError: () => { //rollback
+            applyCommentsDelta(queryClient, postId, -1)
+        },
+        onSuccess: () => { //refresca solo las listas del post
             queryClient.invalidateQueries({
                 predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === "comments" && query.queryKey[1] === postId
             })
@@ -123,10 +128,31 @@ export function useDeleteComment(postId: number) {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (id: number) => eliminarComentario(id),
+        onMutate: async () => {
+            applyCommentsDelta(queryClient, postId, -1)
+        },
+        onError: () => {
+            applyCommentsDelta(queryClient, postId, +1)
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                predicate: (query) => Array.isArray(query.queryKey) && query.queryKey[0] === "comments" && query.queryKey[1] === postId
+                predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "comments" && q.queryKey[1] === postId
             })
+        }
+    })
+}
+
+function applyCommentsDelta(queryClient: ReturnType<typeof useQueryClient>, postId: number, delta: number) {
+    queryClient.setQueryData(["post", postId], (old: any) => //Detalle del post
+        old ? { ...old, commentsCount: Math.max(0, (old.commentsCount ?? 0) + delta) } : old
+    )
+    queryClient.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => { //Feed
+        if (!old?.content) return old
+        return {
+            ...old,
+            content: old.content.map((p: any) =>
+                p.id === postId ? { ...p, commentsCount: Math.max(0, (p.commentsCount ?? 0) + delta) } : p
+            ),
         }
     })
 }
@@ -142,11 +168,11 @@ export function usePostReactions(postId?: number | null) {
         enabled: !!id,
         queryFn: () => cargarReacciones(id!),
 
-        initialData: () => { //hidrata desde feed/detalle si ya existe
+        initialData: () => { //hidrata
             if (!id) return undefined
-            const detail = queryClient.getQueryData<any>(["post", id])
+            const detail = queryClient.getQueryData<any>(["post", id]) //detalle del post
             if (detail?.reactions) return detail.reactions as ReactionSummary
-            const feeds = queryClient.getQueriesData<any>({ queryKey: ["feed"] })
+            const feeds = queryClient.getQueriesData<any>({ queryKey: ["feed"] }) //feed
             for (const [, page] of feeds) {
                 const found = page?.content?.find((p: any) => p.id === id)
                 if (found?.reactions) return found.reactions as ReactionSummary
@@ -162,7 +188,7 @@ export function useReactToPost() {
     const qc = useQueryClient()
     return useMutation({
         mutationFn: (vars: { postId: number; type: "like" | "love" | "care" | "haha" | "wow" | "sad" | "angry" | null }) => reaccionarAPost(vars.postId, vars.type),
-        //Mutación optimista
+        //mutación optimista
         onMutate: async (vars) => {
             const key = ["postReactions", vars.postId] as const
             await qc.cancelQueries({ queryKey: key })
@@ -179,7 +205,7 @@ export function useReactToPost() {
                 myReaction: prev.myReaction,
             }
 
-            //Decrementa anterior si existía
+            // caso "-"
             if (prev.myReaction) {
                 const old = prev.myReaction
                 next.counts[old] = Math.max(0, (next.counts[old] ?? 0) - 1)
@@ -187,17 +213,16 @@ export function useReactToPost() {
                 next.myReaction = null
             }
 
-            //Asigna nueva si procede
+            // caso "+"
             if (newType) {
                 next.counts[newType] = (next.counts[newType] ?? 0) + 1
                 next.total += 1
                 next.myReaction = newType
             }
 
-            //Escribe optimista
-            qc.setQueryData(key, next)
-            //También refleja en feed y detalle si están cacheados
-            qc.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => {
+            qc.setQueryData(key, next) //escribe optimista
+
+            qc.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => { //feed
                 if (!old?.content) return old
                 return {
                     ...old,
@@ -206,17 +231,17 @@ export function useReactToPost() {
                     ),
                 }
             })
-            qc.setQueryData(["post", vars.postId], (old: any) =>
+
+            qc.setQueryData(["post", vars.postId], (old: any) => //post
                 old ? { ...old, reactions: next, likesCount: next.total } : old
             )
 
             return { previous, key }
         },
-        onError: (_err, _vars, ctx) => {
+        onError: (_err, _vars, ctx) => { //rollback
             if (ctx?.previous) qc.setQueryData(ctx.key!, ctx.previous)
         },
-        onSuccess: (summary) => {
-            //Cambia por la respuesta normalizada del backend
+        onSuccess: (summary) => { //Cambia por la respuesta normalizada del backend
             const key = ["postReactions", summary.postId] as const
             qc.setQueryData(key, summary)
             qc.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => {

@@ -11,6 +11,7 @@ public class PostResponse {
     private String content;
     private String postType;
     private String mediaUrl;
+    private long commentsCount;
     private Instant createdAt;
     private Instant updatedAt;
     private boolean edited;
@@ -60,6 +61,8 @@ public class PostResponse {
     public String getMediaUrl() {
         return mediaUrl;
     }
+    public long getCommentsCount() { return commentsCount; }
+    public void setCommentsCount(long commentsCount) { this.commentsCount = commentsCount; }
     public void setMediaUrl(String mediaUrl) {
         this.mediaUrl = mediaUrl;
     }

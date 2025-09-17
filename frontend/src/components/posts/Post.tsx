@@ -39,6 +39,9 @@ export type PostDto = {
     updatedAt?: string | null
     edited?: boolean
     postType: "text" | "profile_photo" | "banner_photo"
+    // likesCount?: number
+    // likedByMe?: boolean
+    commentsCount?: number
 }
 
 type Props = {
@@ -112,7 +115,7 @@ const Post: React.FC<Props> = ({ post, canManage = false, onEdit, onDelete, onCo
 
                 <div className="flex flex-col">
                     <span className="font-bold">
-                        <Link to={`/u/${post.authorSlug}`} className="hover:text-blue-900">
+                        <Link to={`/u/${post.authorSlug}`} className="hover:text-blue-600">
                             {post.authorName}
                         </Link>
                         <span className="font-normal">
@@ -174,13 +177,23 @@ const Post: React.FC<Props> = ({ post, canManage = false, onEdit, onDelete, onCo
             )}
 
             {reactionsCount > 0 && (
-                <div className="px-3 mt-2 text-sm text-gray-600 flex items-center gap-1">
-                    <span className="flex -space-x-1">
-                        {top3.map((e, indice) => (
-                            <span key={indice} className="first:ml-0 ml-[-2px]">{e}</span>
-                        ))}
+                <div className="px-3 mt-2 text-sm text-gray-600 flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                        <span className="flex -space-x-1">
+                            {top3.map((e, indice) => (
+                                <span key={indice} className="first:ml-0 ml-[-2px]">{e}</span>
+                            ))}
+                        </span>
+                        <span>{reactionsCount}</span>
                     </span>
-                    <span>{reactionsCount}</span>
+                    {(post.commentsCount ?? 0) > 0 && (
+                        <span
+                            onClick={() => onComment(post.id)}
+                            className="cursor-pointer hover:underline"
+                        >
+                            {post.commentsCount} comentario{(post.commentsCount ?? 0) === 1 ? "" : "s"}
+                        </span>
+                    )}
                 </div>
             )}
 
