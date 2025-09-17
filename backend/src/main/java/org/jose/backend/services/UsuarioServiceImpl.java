@@ -1,10 +1,9 @@
 package org.jose.backend.services;
 
-import org.jose.backend.dto.EditProfileRequest;
+import org.jose.backend.dto.Profile.EditProfileRequest;
 import org.jose.backend.dto.Post.CreatePostRequest;
-import org.jose.backend.dto.UserProfileResponse;
+import org.jose.backend.dto.Profile.UserProfileResponse;
 import org.jose.backend.model.Imagen;
-import org.jose.backend.model.Post;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {

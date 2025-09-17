@@ -1,10 +1,7 @@
 package org.jose.backend.controller;
 
 import jakarta.validation.Valid;
-import org.jose.backend.dto.EditProfileRequest;
-import org.jose.backend.dto.LoginRequest;
-import org.jose.backend.dto.UserProfileResponse;
-import org.jose.backend.model.Imagen;
+import org.jose.backend.dto.Auth.LoginRequest;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.jose.backend.security.JwtTokenUtil;
@@ -13,13 +10,9 @@ import org.jose.backend.services.SlugService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 

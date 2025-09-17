@@ -1,8 +1,7 @@
 package org.jose.backend.services;
 
-import org.jose.backend.dto.EditProfileRequest;
-import org.jose.backend.dto.UserProfileResponse;
-import org.jose.backend.model.Post;
+import org.jose.backend.dto.Profile.EditProfileRequest;
+import org.jose.backend.dto.Profile.UserProfileResponse;
 import org.jose.backend.model.Usuario;
 import org.springframework.web.multipart.MultipartFile;
 

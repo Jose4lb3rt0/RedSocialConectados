@@ -1,8 +1,6 @@
-package org.jose.backend.dto;
+package org.jose.backend.dto.Profile;
 
 import org.jose.backend.model.Imagen;
-
-import java.time.Instant;
 
 public class UserProfileResponse {
     private Imagen profilePicture;

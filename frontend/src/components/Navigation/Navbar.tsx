@@ -3,6 +3,7 @@ import { useAuth } from "../../auth/AuthContext"
 import { FaChevronDown, FaChevronUp, FaCog, FaSearch, FaUser } from "react-icons/fa"
 import { useState } from "react"
 import { IoLogOutSharp } from "react-icons/io5"
+import { FaHouse, FaUsers } from "react-icons/fa6"
 
 const Navbar: React.FC = () => {
     const { user, logout, isAuthenticated } = useAuth()
@@ -10,9 +11,9 @@ const Navbar: React.FC = () => {
 
     return (
         <nav className="w-full border-b-blue-200 bg-blue-50 border-b-1">
-            <ul className="flex justify-between py-2 px-4">
+            <ul className="relative grid grid-cols-[auto_1fr_auto] items-center py-2 px-4">
                 {/* Bloquesito 1: Logo y buscador */}
-                <li>
+                <li className="justify-self-start">
                     <div className="flex items-center gap-4">
                         <Link to="/">
                             <img
@@ -33,10 +34,20 @@ const Navbar: React.FC = () => {
                         </div>
                     </div>
                 </li>
-                {/* Bloquesito 2: Menú de usuario */}
-                {isAuthenticated && user ? (
 
-                    <li>
+                {/* Bloquesito 2: Links de navegación */}
+                {user && isAuthenticated && (
+                    <li
+                        className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-20"
+                    >
+                        <Link to="/" className="text-gray-700 hover:text-blue-600 transition-all"><FaHouse /></Link>
+                        <Link to="/friends" className="text-gray-700 hover:text-blue-600 transition-all"><FaUsers /></Link>
+                    </li>
+                )}
+
+                {/* Bloquesito 3: Menú de usuario */}
+                {isAuthenticated && user ? (
+                    <li className="justify-self-end">
                         <div className="relative cursor-pointer" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                             <button className={`${user?.profilePicture?.imagenUrl ? "p-0" : "p-2"} flex items-center rounded-full border border-gray-300`}>
                                 {user?.profilePicture?.imagenUrl ? (
@@ -111,10 +122,12 @@ const Navbar: React.FC = () => {
                                 </ul>
                             </div>
                         </div>
-
                     </li>
                 ) : (
-                    <Link to="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-all">
+                    <Link
+                        to="/login"
+                        className="justify-self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-all"
+                    >
                         Iniciar sesión
                     </Link>
                 )}

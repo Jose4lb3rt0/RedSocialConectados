@@ -1,7 +1,7 @@
 package org.jose.backend.controller;
 
-import org.jose.backend.dto.EditProfileRequest;
-import org.jose.backend.dto.UserProfileResponse;
+import org.jose.backend.dto.Profile.EditProfileRequest;
+import org.jose.backend.dto.Profile.UserProfileResponse;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.security.JwtTokenUtil;
 import org.jose.backend.services.UsuarioService;
@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")

@@ -11,12 +11,12 @@ export default function PostComposer() {
 
     return (
         <div className="border w-full max-w-lg mx-auto rounded p-3">
-            <textarea 
+            <textarea
                 onClick={() => setIsCreatePostDialogOpen(true)}
                 className="w-full border rounded p-2"
                 placeholder={`¿Qué estás pensando, ${user?.name}?`}
-                // value={content}
-                // onChange={(e) => setContent(e.target.value)}
+            // value={content}
+            // onChange={(e) => setContent(e.target.value)}
             />
             {/* <button
                 className="mt-2 px-3 py-1 rounded bg-blue-600 text-white disabled:bg-blue-300"
@@ -29,7 +29,11 @@ export default function PostComposer() {
                 Publicar
             </button> */}
 
-            <CreatePostDialog open={isCreatePostDialogOpen} onOpenChange={setIsCreatePostDialogOpen} />
+            <CreatePostDialog
+                postId={null}
+                open={isCreatePostDialogOpen}
+                onOpenChange={setIsCreatePostDialogOpen}
+            />
         </div>
     )
 }

@@ -1,6 +1,4 @@
-package org.jose.backend.dto;
-
-import lombok.Data;
+package org.jose.backend.dto.Auth;
 
 public class RegisterRequest { //Todavía
     private String email;

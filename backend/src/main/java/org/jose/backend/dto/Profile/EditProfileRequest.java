@@ -1,4 +1,4 @@
-package org.jose.backend.dto;
+package org.jose.backend.dto.Profile;
 
 public class EditProfileRequest {
     private String name;

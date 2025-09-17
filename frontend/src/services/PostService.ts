@@ -12,6 +12,16 @@ export type UpdateCommentPayload = {
     removeMedia?: boolean
 }
 
+export type ReactionEnum = "LIKE" | "LOVE" | "CARE" | "HAHA" | "WOW" | "SAD" | "ANGRY"
+export type ReactionKey = "like" | "love" | "care" | "haha" | "wow" | "sad" | "angry"
+
+export type ReactionSummary = {
+    postId: number
+    total: number
+    counts: Record<ReactionEnum, number>
+    myReaction: ReactionEnum | null
+}
+
 // Funciones para interactuar con los posts
 
 export async function crearPost(
@@ -113,4 +123,41 @@ export async function eliminarComentario(id: number) {
     return await apiFetch(`/comments/${id}`, {
         method: "DELETE",
     })
+}
+
+// Funciones para interactuar con las reacciones
+
+function normalizarResumenDeReacciones(raw: any): ReactionSummary {
+    const conteos = (raw?.conteo ?? raw?.counts ?? {}) as Record<string, number>
+    const normalizedCounts = Object.keys(conteos).reduce((acc, k) => {
+        acc[k as ReactionEnum] = conteos[k]
+        return acc
+    }, {} as Record<ReactionEnum, number>)
+
+    const my = (raw?.miReaccion ?? raw?.myReaccion ?? null) as ReactionEnum | null
+
+    return {
+        postId: Number(raw?.postId),
+        total: Number(raw?.total ?? 0),
+        counts: normalizedCounts,
+        myReaction: my,
+    }
+}
+
+export async function cargarReacciones(postId: number) {
+    const res = await apiFetch(`/posts/${postId}/reactions`, { method: "GET" })
+    return normalizarResumenDeReacciones(res)
+}
+
+export async function reaccionarAPost(
+    postId: number,
+    type: ReactionKey | null
+) {
+    const body = type ? { type: type.toUpperCase() } : {}
+    const res = await apiFetch(`/posts/${postId}/reactions`, {
+        method: "POST",
+        body: JSON.stringify(body),
+    })
+
+    return normalizarResumenDeReacciones(res)
 }
