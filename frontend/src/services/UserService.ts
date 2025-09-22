@@ -39,6 +39,23 @@ export type UserProfile = {
     yearOfBirth: number
 }
 
+export type UserSummary = {
+    id: number
+    authorName: string
+    authorSurname: string
+    authorSlug: string
+    authorPhoto?: string | null
+    fullName?: string
+}
+
+export type Page<T> = {
+    content: T[]
+    totalElements: number
+    totalPages: number
+    number: number
+    size: number
+}
+
 function toBirthPayload(birthday: string) {
     const [year, month, day] = birthday.split("-").map(Number)
     return { dayOfBirth: day, monthOfBirth: month, yearOfBirth: year }
@@ -106,4 +123,8 @@ export async function actualizarPerfil(data: EditProfileFormData) {
         method: "PATCH",
         body: JSON.stringify(payload),
     })
+}
+
+export async function listaUsuarios(): Promise<Page<UserSummary>> {
+    return apiFetch("/users", { method: "GET" })
 }

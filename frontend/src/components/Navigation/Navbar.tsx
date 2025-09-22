@@ -10,11 +10,11 @@ const Navbar: React.FC = () => {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
     return (
-        <nav className="w-full border-b-blue-200 bg-blue-50 border-b-1">
-            <ul className="relative grid grid-cols-[auto_1fr_auto] items-center py-2 px-4">
-                {/* Bloquesito 1: Logo y buscador */}
-                <li className="justify-self-start">
-                    <div className="flex items-center gap-4">
+        <nav className="w-full border-b-blue-200 bg-blue-50 border-b-1 h-14"> {/* altura fija */}
+            <ul className="relative grid grid-cols-[auto_1fr_auto] items-center h-full">
+                {/* Bloquesito 1 */}
+                <li className="justify-self-start h-full py-0 px-4 flex items-center">
+                    <div className="flex items-center gap-4 h-full">
                         <Link to="/">
                             <img
                                 src="/logo-icono-nombre.png"
@@ -35,19 +35,29 @@ const Navbar: React.FC = () => {
                     </div>
                 </li>
 
-                {/* Bloquesito 2: Links de navegación */}
+                {/* Bloquesito 2 centrado y a altura completa */}
                 {user && isAuthenticated && (
                     <li
-                        className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-20"
+                        className="hidden md:flex items-stretch gap-1 absolute top-0 left-1/2 -translate-x-1/2 h-full z-20"
                     >
-                        <Link to="/" className="text-gray-700 hover:text-blue-600 transition-all"><FaHouse /></Link>
-                        <Link to="/friends" className="text-gray-700 hover:text-blue-600 transition-all"><FaUsers /></Link>
+                        <Link
+                            to="/"
+                            className="h-full px-5 flex items-center justify-center text-gray-700 hover:text-blue-600 hover:bg-blue-100 transition-colors rounded-md"
+                        >
+                            <FaHouse className="text-lg" />
+                        </Link>
+                        <Link
+                            to="/friends"
+                            className="h-full px-5 flex items-center justify-center text-gray-700 hover:text-blue-600 hover:bg-blue-100 transition-colors rounded-md"
+                        >
+                            <FaUsers className="text-lg" />
+                        </Link>
                     </li>
                 )}
 
-                {/* Bloquesito 3: Menú de usuario */}
+                {/* Bloquesito 3 */}
                 {isAuthenticated && user ? (
-                    <li className="justify-self-end">
+                    <li className="justify-self-end py-0 px-4 h-full flex items-center">
                         <div className="relative cursor-pointer" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                             <button className={`${user?.profilePicture?.imagenUrl ? "p-0" : "p-2"} flex items-center rounded-full border border-gray-300`}>
                                 {user?.profilePicture?.imagenUrl ? (
@@ -126,7 +136,7 @@ const Navbar: React.FC = () => {
                 ) : (
                     <Link
                         to="/login"
-                        className="justify-self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-all"
+                        className="py-2 px-4 justify-self-end bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm transition-all"
                     >
                         Iniciar sesión
                     </Link>

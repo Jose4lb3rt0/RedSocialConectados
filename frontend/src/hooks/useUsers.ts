@@ -5,7 +5,10 @@ import {
     verificarCuenta as verificarCuentaService,
     actualizarPerfil as actualizarPerfilService,
     obtenerPerfil,
-    obtenerPerfilPorSlug
+    obtenerPerfilPorSlug,
+    listaUsuarios as listaUsuariosService,
+    type Page,
+    type UserSummary,
 } from "../services/UserService"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
@@ -27,6 +30,11 @@ export function useUsers() {
         queryKey: slug ? ["users", slug] : ["profile"],
         queryFn: () => slug ? obtenerPerfilPorSlug(slug) : obtenerPerfil(),
     })
+
+    // const usuarios = useQuery<Page<UserSummary>>({
+    //     queryKey: ["users"],
+    //     queryFn: () => listaUsuariosService(),
+    // })
 
     const iniciarSesion = useMutation({
         mutationFn: iniciarSesionService,
@@ -82,6 +90,7 @@ export function useUsers() {
         verificarCuenta, 
         iniciarSesion, 
         actualizarPerfil,
-        perfil
+        perfil,
+        // usuarios
     }
 }

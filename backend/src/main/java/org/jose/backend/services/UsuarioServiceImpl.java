@@ -1,5 +1,6 @@
 package org.jose.backend.services;
 
+import org.jose.backend.dto.Friends.UserSummaryResponse;
 import org.jose.backend.dto.Profile.EditProfileRequest;
 import org.jose.backend.dto.Post.CreatePostRequest;
 import org.jose.backend.dto.Profile.UserProfileResponse;
@@ -7,6 +8,8 @@ import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +22,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ImagenService imagenService;
     @Autowired private PostService postService;
+    @Autowired private CurrentUserService currentUser;
 
     @Override
     public Usuario getUsuarioPorEmail(String email) {

@@ -32,7 +32,7 @@ public class ProfileController {
         body.put("name", usuario.getName());
         body.put("surname", usuario.getSurname());
         body.put("slug", usuario.getSlug());
-        if (usuario.getProfilePicture() != null) { // ojo: no usar "!x == null"
+        if (usuario.getProfilePicture() != null) {
             body.put("profilePicture", usuario.getProfilePicture());
         }
         return ResponseEntity.ok(body);

@@ -61,6 +61,10 @@ const Post: React.FC<Props> = ({ post, canManage = false, onEdit, onDelete, onCo
     const reactMut = useReactToPost()
 
     const reactionsCount = reactions?.total ?? 0
+    const commentsCount = post.commentsCount ?? 0
+    const hasReactions = reactionsCount > 0
+    const hasComments = commentsCount > 0
+    const showSummary = hasReactions || hasComments
 
     const myReaction = reactions?.myReaction ? (reactions.myReaction.toLowerCase() as ReactionKey) : null
 
@@ -176,22 +180,25 @@ const Post: React.FC<Props> = ({ post, canManage = false, onEdit, onDelete, onCo
                 <img src={post.mediaUrl} alt="Media" className={`${post.content ? "mt-2" : ""} w-full`} />
             )}
 
-            {reactionsCount > 0 && (
+            {showSummary && (
                 <div className="px-3 mt-2 text-sm text-gray-600 flex items-center justify-between">
-                    <span className="flex items-center gap-1">
-                        <span className="flex -space-x-1">
-                            {top3.map((e, indice) => (
-                                <span key={indice} className="first:ml-0 ml-[-2px]">{e}</span>
-                            ))}
+                    {hasReactions && (
+                        <span className="flex items-center gap-1">
+                            <span className="flex -space-x-1">
+                                {top3.map((e, indice) => (
+                                    <span key={indice} className="first:ml-0 ml-[-2px]">{e}</span>
+                                ))}
+                            </span>
+                            <span>{reactionsCount}</span>
                         </span>
-                        <span>{reactionsCount}</span>
-                    </span>
-                    {(post.commentsCount ?? 0) > 0 && (
+                    )}
+
+                    {hasComments && (
                         <span
                             onClick={() => onComment(post.id)}
-                            className="cursor-pointer hover:underline"
+                            className={`cursor-pointer hover:underline ${!hasReactions ? "ml-auto" : ""}`}
                         >
-                            {post.commentsCount} comentario{(post.commentsCount ?? 0) === 1 ? "" : "s"}
+                            {commentsCount} comentario{commentsCount === 1 ? "" : "s"}
                         </span>
                     )}
                 </div>
