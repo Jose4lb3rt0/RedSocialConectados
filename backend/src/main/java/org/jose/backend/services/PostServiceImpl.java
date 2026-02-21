@@ -67,10 +67,27 @@ public class PostServiceImpl implements PostService {
         p.setAuthor(author);
         p.setType(type);
         p.setContent(content);
+
         if (hasFile) {
             Imagen img = imagenService.uploadImagen(file);
             p.setImagen(img);
         }
+        postRepo.save(p);
+        return toResp(p);
+    }
+
+    @Override
+    public PostResponse createWithExistingImage(CreatePostRequest request, Imagen imagen) {
+        Usuario author = currentUserService.getUser();
+        String content = request != null && request.getContent() != null ? request.getContent() : "";
+        String type = request != null && request.getType() != null ? request.getType() : "";
+
+        Post p = new Post();
+        p.setAuthor(author);
+        p.setType(type);
+        p.setContent(content);
+        p.setImagen(imagen);
+
         postRepo.save(p);
         return toResp(p);
     }
@@ -140,3 +157,4 @@ public class PostServiceImpl implements PostService {
         postRepo.save(post);
     }
 }
+

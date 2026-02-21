@@ -55,16 +55,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UserProfileResponse actualizarFotoPerfil(String email, MultipartFile file) throws IOException {
         Usuario usuario = getUsuarioPorEmail(email);
-
         Imagen imagen = imagenService.uploadImagen(file);
+
         usuario.setProfilePicture(imagen);
         usuarioRepository.save(usuario);
 
         CreatePostRequest post = new CreatePostRequest();
         post.setType("profile_photo");
         post.setContent("");
-        //post.setMediaUrl(imagen.getImagenUrl());
-        postService.create(post, (MultipartFile) file);
+        postService.createWithExistingImage(post, imagen);
 
         return mapToUserProfileResponse(usuario);
     }
@@ -80,8 +79,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         CreatePostRequest post = new CreatePostRequest();
         post.setType("banner_photo");
         post.setContent("");
-        //post.setMediaUrl(imagen.getImagenUrl());
-        postService.create(post, (MultipartFile) file);
+        postService.createWithExistingImage(post, imagen);
 
         return mapToUserProfileResponse(usuario);
     }
