@@ -69,7 +69,7 @@ const ProfilePage: React.FC = () => {
             })
 
             await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ["profile"] }),
+                queryClient.invalidateQueries({ queryKey: ["users", slug?.slug] }),
                 refreshMe()
             ])
         } catch (error: any) {

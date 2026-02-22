@@ -80,15 +80,15 @@ export function useUsers() {
         onSuccess: (data: any) => {
             toast.success(data?.message || "Perfil actualizado.")
             // Refresca la caché del perfil
-            queryClient.invalidateQueries({ queryKey: ["profile"] })
+            queryClient.invalidateQueries({ queryKey: ["users"] })
         },
         onError: (e) => toast.error(getErrorMessage(e))
     })
 
-    return { 
-        registrarUsuario, 
-        verificarCuenta, 
-        iniciarSesion, 
+    return {
+        registrarUsuario,
+        verificarCuenta,
+        iniciarSesion,
         actualizarPerfil,
         perfil,
         // usuarios

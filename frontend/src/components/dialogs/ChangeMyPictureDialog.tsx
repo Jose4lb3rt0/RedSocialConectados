@@ -59,7 +59,7 @@ const ChangeMyPictureDialog: React.FC<ChangeMyPictureDialogProps> = ({ isOpen, s
         if (!imageSrc || !croppedAreaPixels) return
         const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels)
         const croppedFile = new File([croppedBlob], selectedFile!.name, { type: selectedFile!.type })
-        onSave(croppedFile)
+        await onSave(croppedFile)
         setIsOpen(false)
         setSelectedFile(null)
         setImageSrc(null)
