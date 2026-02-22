@@ -3,6 +3,8 @@ package org.jose.backend.dto.Profile;
 import org.jose.backend.model.Imagen;
 
 public class UserProfileResponse {
+    private Long id;
+
     private Imagen profilePicture;
     private Imagen bannerPicture;
 
@@ -15,7 +17,8 @@ public class UserProfileResponse {
     private int monthOfBirth;
     private int yearOfBirth;
 
-    public UserProfileResponse(Imagen profilePicture, Imagen bannerPicture, String name, String surname, String gender, String biography, int dayOfBirth, int monthOfBirth, int yearOfBirth) {
+    public UserProfileResponse(Long id, Imagen profilePicture, Imagen bannerPicture, String name, String surname, String gender, String biography, int dayOfBirth, int monthOfBirth, int yearOfBirth) {
+        this.id = id;
         this.profilePicture = profilePicture;
         this.bannerPicture = bannerPicture;
         this.name = name;
@@ -25,6 +28,14 @@ public class UserProfileResponse {
         this.dayOfBirth = dayOfBirth;
         this.monthOfBirth = monthOfBirth;
         this.yearOfBirth = yearOfBirth;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Imagen getProfilePicture() {

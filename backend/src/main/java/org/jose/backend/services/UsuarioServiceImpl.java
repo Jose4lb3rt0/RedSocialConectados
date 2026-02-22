@@ -86,6 +86,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private UserProfileResponse mapToUserProfileResponse(Usuario usuario) {
         return new UserProfileResponse(
+                usuario.getId(),
                 usuario.getProfilePicture(),
                 usuario.getBannerPicture(),
                 usuario.getName(),

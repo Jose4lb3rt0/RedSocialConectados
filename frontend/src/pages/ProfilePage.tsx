@@ -13,6 +13,7 @@ import { useUsers } from "@/hooks/useUsers"
 import { useParams } from "react-router-dom"
 
 const ProfilePage: React.FC = () => {
+    const yo = useAuth()
     const slug = useParams<{ slug: string }>()
     const { perfil } = useUsers()
     const { refreshMe, isAuthenticated } = useAuth()
@@ -23,6 +24,13 @@ const ProfilePage: React.FC = () => {
 
     // Query principal para la página (no para el modal)
     const { data: userProfile, isLoading, error } = perfil(slug?.slug || "")
+
+    const isOwnProfile = yo.user?.id === userProfile?.id
+
+    useEffect(() => {
+        console.log("Perfil cargado:", userProfile)
+        console.log("Mi perfil:", yo.user)
+    }, [userProfile])
 
     const {
         reset
@@ -97,7 +105,7 @@ const ProfilePage: React.FC = () => {
                 {/* Sombreado de negro */}
                 <div className="bg-gradient-to-b from-transparent to-black/30 w-full h-[20%] absolute bottom-0 z-10 rounded-b-md"></div>
 
-                {isAuthenticated && (
+                {isAuthenticated && isOwnProfile && (
                     <button
                         className="absolute bottom-3 right-5 z-11 flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
                         onClick={() => {
@@ -124,7 +132,7 @@ const ProfilePage: React.FC = () => {
                         )}
                     </div>
                     {/* Botón de cambiar foto de perfil */}
-                    {isAuthenticated && (
+                    {isAuthenticated && isOwnProfile && (
                         <button
                             className="absolute bottom-2 right-2 bg-gray-500 p-2 rounded-full cursor-pointer hover:bg-gray-600 transition-all duration-300"
                             onClick={() => {
@@ -145,7 +153,7 @@ const ProfilePage: React.FC = () => {
                     </h1>
                     <p className="text-gray-600 font-semibold">XX amigos</p>
                 </div>
-                {isAuthenticated && (
+                {isAuthenticated && isOwnProfile && (
                     <div className="flex items-center gap-4">
                         <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all duration-300">
                             <FaPlus className="text-white" />

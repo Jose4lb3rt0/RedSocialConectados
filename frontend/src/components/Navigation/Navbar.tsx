@@ -1,13 +1,17 @@
-import { Link } from "react-router-dom"
 import { useAuth } from "../../auth/AuthContext"
 import { FaChevronDown, FaChevronUp, FaCog, FaSearch, FaUser } from "react-icons/fa"
 import { useState } from "react"
 import { IoLogOutSharp } from "react-icons/io5"
 import { FaHouse, FaUsers } from "react-icons/fa6"
+import { useSearchUsuarios } from "@/hooks/useSearch"
+import { Link } from "react-router-dom"
 
 const Navbar: React.FC = () => {
     const { user, logout, isAuthenticated } = useAuth()
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
+    const [searchQuery, setSearchQuery] = useState("")
+    const { data: searchResults, isLoading } = useSearchUsuarios(searchQuery)
 
     return (
         <nav className="w-full border-b-blue-200 bg-blue-50 border-b-1 h-14"> {/* altura fija */}
@@ -19,18 +23,54 @@ const Navbar: React.FC = () => {
                             <img
                                 src="/logo-icono-nombre.png"
                                 alt="Conectados"
-                                className="h-8 w-auto"
+                                className="h-10 w-auto object-contain"
                             />
                         </Link>
-                        <div className="relative">
-                            <input
-                                className="bg-blue-100 rounded-full px-4 py-2 text-sm w-52 transition-all focus:outline-0"
-                                placeholder="Buscar en Conectados"
-                                maxLength={60}
-                            />
-                            <button className="absolute right-0 top-0 bottom-0 px-3 text-gray-500 hover:text-blue-400 cursor-pointer transition-all duration-200 rounded-e-full focus:outline-0 focus:text-blue-400 bg-blue-100">
-                                <FaSearch />
-                            </button>
+                        <div className="flex flex-col max-w-xs w-full">
+                            <div className="relative w-full">
+                                <input
+                                    className="bg-blue-100 rounded-full px-4 py-2 text-sm w-full transition-all focus:outline-0"
+                                    placeholder="Buscar en Conectados"
+                                    maxLength={60}
+                                    onFocus={() => setIsSearchBarFocused(true)}
+                                    // onBlur={() => setIsSearchBarFocused(false)}
+                                    // para evitar que al hacer click en los resultados se cierre la barra antes de navegar, se retrasa un poco el blur
+                                    onBlur={() => setTimeout(() => setIsSearchBarFocused(false), 200)}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                <button className="absolute right-0 top-0 bottom-0 px-3 text-gray-500 hover:text-blue-400 cursor-pointer transition-all duration-200 rounded-e-full focus:outline-0 focus:text-blue-400 bg-blue-100">
+                                    <FaSearch />
+                                </button>
+                                {isSearchBarFocused && searchQuery.trim().length > 0 && (
+                                    <div className="absolute top-full mt-1 w-full bg-white border border-gray-300 rounded-sm shadow-lg z-10 max-h-64 overflow-y-auto">
+                                        {isLoading && <p className="p-2 text-gray-500">Buscando...</p>}
+                                        {!isLoading && (searchResults?.content ?? []).map(user => (
+                                            <Link
+                                                key={user.id}
+                                                to={`/u/${user.authorSlug}`}
+                                                className="flex items-center gap-2 p-2 hover:bg-blue-50"
+                                                onClick={() => setSearchQuery("")}
+                                            >
+                                                {user.authorPhoto ? (
+                                                    <img
+                                                        src={user.authorPhoto}
+                                                        alt={user.authorName}
+                                                        className="w-8 h-8 rounded-full"
+                                                    />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full border-gray-300 border-2 flex items-center justify-center bg-gray-200">
+                                                        <FaUser className="text-gray-500" />
+                                                    </div>
+                                                )}
+                                                <span className="text-sm">{user.authorName} {user.authorSurname}</span>
+                                            </Link>
+                                        ))}
+                                        {!isLoading && (searchResults?.content?.length ?? 0) === 0 && (
+                                            <p className="p-2 text-sm text-gray-500">No se encontraron resultados</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </li>
