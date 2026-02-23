@@ -11,6 +11,7 @@ import { FaMountainSun } from "react-icons/fa6"
 import { useAuth } from "@/auth/AuthContext"
 import { useUsers } from "@/hooks/useUsers"
 import { useParams } from "react-router-dom"
+import { useFriendshipActions } from "@/hooks/useFriendshipActions"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
@@ -24,17 +25,23 @@ const ProfilePage: React.FC = () => {
 
     // Query principal para la página (no para el modal)
     const { data: userProfile, isLoading, error } = perfil(slug?.slug || "")
-
     const isOwnProfile = yo.user?.id === userProfile?.id
 
-    useEffect(() => {
-        console.log("Perfil cargado:", userProfile)
-        console.log("Mi perfil:", yo.user)
-    }, [userProfile])
-
     const {
-        reset
-    } = useForm<EditProfileFormData>({
+        getStatus,
+        handleAdd,
+        handleCancel,
+        handleAccept,
+        handleReject,
+        handleRemove,
+        isSending,
+        isCancelling,
+        isAccepting,
+        isRejecting,
+        isRemoving
+    } = useFriendshipActions("inicio")
+
+    const { reset } = useForm<EditProfileFormData>({
         resolver: zodResolver(editProfileSchema),
         defaultValues: {
             name: "",
@@ -87,6 +94,9 @@ const ProfilePage: React.FC = () => {
 
     if (isLoading) return <p>Cargando perfil...</p>
     if (error instanceof Error) return <p>Error al cargar perfil: {error.message}</p>
+
+    //definido aqui y no en la iteración como en ResultsPage o FriendsPage, pues aqui ya estamos unicamente a un usuario
+    const friendshipStatus = userProfile ? getStatus(userProfile.id) : null
 
     return (
         <div className="w-full max-w-6xl mx-auto">
@@ -153,22 +163,79 @@ const ProfilePage: React.FC = () => {
                     </h1>
                     <p className="text-gray-600 font-semibold">XX amigos</p>
                 </div>
-                {isAuthenticated && isOwnProfile && (
+                {isAuthenticated && (
                     <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all duration-300">
-                            <FaPlus className="text-white" />
-                            Agregar historia
-                        </button>
+                        {isOwnProfile && (
+                            <>
+                                <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all duration-300">
+                                    <FaPlus className="text-white" />
+                                    Agregar historia
+                                </button>
 
-                        <button
-                            onClick={openEdit}
-                            // onClick={() => setIsEditProfileDialogOpen(true)}
-                            className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
-                        >
-                            <FaPencilAlt className="text-white" />
-                            Editar perfil
-                        </button>
+                                <button
+                                    onClick={openEdit}
+                                    // onClick={() => setIsEditProfileDialogOpen(true)}
+                                    className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-300"
+                                >
+                                    <FaPencilAlt className="text-white" />
+                                    Editar perfil
+                                </button>
+                            </>
+                        )}
 
+                        {!isOwnProfile && friendshipStatus && (
+                            <div className="flex gap-2">
+                                {friendshipStatus.status === "none" && (
+                                    <button
+                                        onClick={() => handleAdd(userProfile!.id)}
+                                        disabled={isSending}
+                                        className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                                    >
+                                        <FaPlus />
+                                        {isSending ? "..." : "Agregar amigo"}
+                                    </button>
+                                )}
+
+                                {friendshipStatus.status === "outgoing" && (
+                                    <button
+                                        onClick={() => handleCancel(friendshipStatus.outgoingRequestId!)}
+                                        disabled={isCancelling}
+                                        className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                                    >
+                                        {isCancelling ? "..." : "Cancelar solicitud"}
+                                    </button>
+                                )}
+
+                                {friendshipStatus.status === "incoming" && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleAccept(friendshipStatus.incomingRequestId!)}
+                                            disabled={isAccepting}
+                                            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                                        >
+                                            {isAccepting ? "..." : "Aceptar"}
+                                        </button>
+                                        <button
+                                            onClick={() => handleReject(friendshipStatus.incomingRequestId!)}
+                                            disabled={isRejecting}
+                                            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                                        >
+                                            {isRejecting ? "..." : "Rechazar"}
+                                        </button>
+                                    </div>
+                                )}
+
+                                {friendshipStatus.status === "friend" && (
+                                    <button
+                                        onClick={() => handleRemove(userProfile!.id)}
+                                        disabled={isRemoving}
+                                        className="flex items-center gap-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                                    >
+                                        {isRemoving ? "..." : "Eliminar amigo"}
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

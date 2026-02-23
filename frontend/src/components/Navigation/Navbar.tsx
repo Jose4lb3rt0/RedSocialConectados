@@ -1,17 +1,23 @@
 import { useAuth } from "../../auth/AuthContext"
 import { FaChevronDown, FaChevronUp, FaCog, FaSearch, FaUser } from "react-icons/fa"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { IoLogOutSharp } from "react-icons/io5"
 import { FaHouse, FaUsers } from "react-icons/fa6"
 import { useSearchUsuarios } from "@/hooks/useSearch"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 
 const Navbar: React.FC = () => {
     const { user, logout, isAuthenticated } = useAuth()
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
+    const [searchParams] = useSearchParams()
     const { data: searchResults, isLoading } = useSearchUsuarios(searchQuery)
+
+    useEffect(() => {
+        const queryFromUrl = searchParams.get("query")
+        if (queryFromUrl) setSearchQuery(queryFromUrl)
+    }, [searchParams])
 
     return (
         <nav className="w-full border-b-blue-200 bg-blue-50 border-b-1 h-14"> {/* altura fija */}
@@ -38,9 +44,13 @@ const Navbar: React.FC = () => {
                                     onBlur={() => setTimeout(() => setIsSearchBarFocused(false), 200)}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                <button className="absolute right-0 top-0 bottom-0 px-3 text-gray-500 hover:text-blue-400 cursor-pointer transition-all duration-200 rounded-e-full focus:outline-0 focus:text-blue-400 bg-blue-100">
-                                    <FaSearch />
-                                </button>
+                                <Link
+                                    to={`/results?query=${encodeURIComponent(searchQuery)}`}
+                                >
+                                    <button className="absolute right-0 top-0 bottom-0 px-3 text-gray-500 hover:text-blue-400 cursor-pointer transition-all duration-200 rounded-e-full focus:outline-0 focus:text-blue-400 bg-blue-100">
+                                        <FaSearch />
+                                    </button>
+                                </Link>
                                 {isSearchBarFocused && searchQuery.trim().length > 0 && (
                                     <div className="absolute top-full mt-1 w-full bg-white border border-gray-300 rounded-sm shadow-lg z-10 max-h-64 overflow-y-auto">
                                         {isLoading && <p className="p-2 text-gray-500">Buscando...</p>}

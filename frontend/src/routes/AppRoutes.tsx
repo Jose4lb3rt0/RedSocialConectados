@@ -8,6 +8,7 @@ import { RequireAuth, RequireGuest } from "./Guards"
 import ProfilePage from "../pages/ProfilePage"
 import Layout from "../components/Navigation/Layout"
 import FriendsPage from "@/pages/FriendsPage"
+import ResultsPage from "@/pages/ResultsPage"
 
 const AppRoutes: React.FC = () => {
     return (
@@ -25,6 +26,7 @@ const AppRoutes: React.FC = () => {
             <Route element={<RequireAuth />}>
                 {/* <Route path="/profile" element={<Layout><ProfilePage /></Layout>} /> */}
                 <Route path="/friends" element={<Layout><FriendsPage /></Layout>} />
+                <Route path="/results" element={<Layout><ResultsPage /></Layout>} />
             </Route>
         </Routes>
     )
