@@ -1,17 +1,40 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { actualizarPost, cargarComentarios, cargarReacciones, crearComentario, crearPost, eliminarComentario, eliminarPost, obtenerComentario, obtenerFeed, obtenerPost, reaccionarAPost, type ReactionEnum, type ReactionSummary, type UpdateCommentPayload, type UpdatePostPayload } from "../services/PostService"
 import { actualizarComentario } from "../services/PostService"
+import {
+    actualizarPost,
+    cargarComentarios,
+    cargarReacciones,
+    crearComentario,
+    crearPost,
+    eliminarComentario,
+    eliminarPost,
+    obtenerComentario,
+    obtenerFeed,
+    obtenerPost,
+    obtenerPostsDelUsuario,
+    reaccionarAPost,
+    type ReactionEnum,
+    type ReactionSummary,
+    type UpdateCommentPayload,
+    type UpdatePostPayload,
+    type PostDto
+} from "../services/PostService"
+import type { Page } from "@/services/UserService"
 
 // Hooks para interactuar con los posts
 export function useFeed(page = 0, size = 10) {
-    return useQuery({ queryKey: ["feed", page, size], queryFn: () => obtenerFeed(page, size) })
+    return useQuery<Page<PostDto>>({
+        queryKey: ["posts", "feed", page],
+        queryFn: () => obtenerFeed(page, size),
+        staleTime: 1000 * 60 * 5 // 5 minutos
+    })
 }
 
 export function usePost(postId?: number | null) {
     const queryClient = useQueryClient()
     const id = typeof postId === "number" && postId > 0 ? postId : undefined
 
-    return useQuery({
+    return useQuery<PostDto>({
         queryKey: ["post", id],
         enabled: !!id,
         queryFn: () => obtenerPost(id as number),
@@ -24,6 +47,15 @@ export function usePost(postId?: number | null) {
             }
             return undefined
         },
+    })
+}
+
+export function useUserPosts(userId: number, page = 0, size = 10) {
+    return useQuery<Page<PostDto>>({
+        queryKey: ["post", "user", userId, page],
+        queryFn: () => obtenerPostsDelUsuario(userId, page, size),
+        staleTime: 1000 * 60 * 5,
+        enabled: userId > 0
     })
 }
 

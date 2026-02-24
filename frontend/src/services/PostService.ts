@@ -1,4 +1,5 @@
 import { apiFetch } from "../api/apibase"
+import type { Page } from "./UserService"
 
 export type UpdatePostPayload = {
     content?: string
@@ -22,6 +23,25 @@ export type ReactionSummary = {
     myReaction: ReactionEnum | null
 }
 
+export type PostDto = {
+    id: number
+    authorId: number
+    authorName: string
+    authorSlug: string
+    authorPhotoUrl?: string | null
+    content?: string | null
+    mediaUrl?: string | null
+    createdAt: string
+    updatedAt?: string | null
+    edited?: boolean
+    postType: "text" | "profile_photo" | "banner_photo"
+    // likesCount?: number
+    // likedByMe?: boolean
+    commentsCount?: number
+}
+
+export type PostResponse = PostDto
+
 // Funciones para interactuar con los posts
 
 export async function crearPost(
@@ -42,12 +62,16 @@ export async function crearPost(
     })
 }
 
-export async function obtenerPost(id: number) {
+export async function obtenerPost(id: number): Promise<PostDto> {
     return apiFetch(`/posts/${id}`)
 }
 
-export async function obtenerFeed(page = 0, size = 10) {
+export async function obtenerFeed(page = 0, size = 10): Promise<Page<PostDto>> {
     return apiFetch(`/posts/feed?page=${page}&size=${size}`)
+}
+
+export async function obtenerPostsDelUsuario(userId: number, page = 0, size = 10): Promise<Page<PostDto>> {
+    return apiFetch(`/posts/user/${userId}?page=${page}&size=${size}`)
 }
 
 export async function actualizarPost(id: number, payload: UpdatePostPayload) {

@@ -15,6 +15,7 @@ public interface PostService {
     PostResponse create(CreatePostRequest request, MultipartFile file) throws IOException;
     PostResponse createWithExistingImage(CreatePostRequest request, Imagen imagen);
     Page<PostResponse> feed(int page, int size);
+    Page<PostResponse> feedForCurrentUser(int page, int size);
     Page<PostResponse> userPosts(Long userId, int page, int size);
     PostResponse update(Long postId, UpdatePostRequest request) throws IOException;
     PostResponse getPost(Long postId); // nuevo

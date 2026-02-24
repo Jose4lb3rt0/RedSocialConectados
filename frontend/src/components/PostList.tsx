@@ -1,22 +1,30 @@
 import { useAuth } from "../auth/AuthContext"
-import { useDeletePost, useFeed } from "../hooks/usePosts"
+import { useDeletePost, useFeed, useUserPosts } from "../hooks/usePosts"
 import { useState } from "react"
 import CreatePostDialog from "./dialogs/CreatePostDialog"
 import PostViewDialog from "./dialogs/PostViewDialog"
-import Post, { type PostDto } from "./posts/Post"
+import Post from "./posts/Post"
+import type { PostDto } from "@/services/PostService"
 
-export default function PostList() {
-    const { data, isLoading } = useFeed()
+interface PostListProps {
+    userId?: number
+}
+
+export default function PostList({ userId }: PostListProps) {
+    const { data: feedData, isLoading: feedLoading } = useFeed()
+    const { data: userPostsData, isLoading: userPostsLoading } = useUserPosts(userId || 0)
     const deletee = useDeletePost()
     const [isEditingPostId, setIsEditingPostId] = useState<number | null>(null)
     const [isViewingPostId, setIsViewingPostId] = useState<number | null>(null)
     const { user } = useAuth()
 
-    if (isLoading) {
-        return <p>Cargando...</p>
-    }
+    if (feedLoading || userPostsLoading) return <p>Cargando...</p>
 
-    const page = data
+    const page = userId ? userPostsData : feedData
+
+    if (!page?.content || page.content.length === 0) {
+        return <p className="text-gray-500">Sin publicaciones para mostrar</p>
+    }
 
     const handleEditPost = (postId: number) => setIsEditingPostId(postId)
     const handleDeletePost = (postId: number) => deletee.mutate(postId)

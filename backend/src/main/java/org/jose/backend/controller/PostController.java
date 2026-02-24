@@ -54,7 +54,8 @@ public class PostController {
     @GetMapping("/feed") //home
     public Page<PostResponse> feed(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size) {
-        return postService.feed(page, size);
+        //return postService.feed(page, size);
+        return postService.feedForCurrentUser(page, size);
     }
 
     @GetMapping("/user/{userId}") //perfil

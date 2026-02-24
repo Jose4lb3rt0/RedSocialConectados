@@ -14,6 +14,25 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("select p from Post p where p.deleted=false order by p.createdAt desc")
     Page<Post> findFeed(Pageable pageable);
 
+    @Query("""
+        select p from Post p
+        where p.deleted = false
+          and (
+            p.author.id = :userId
+            or p.author.id in (
+              select case 
+                when s.solicitante.id = :userId then s.destinatario.id
+                else s.solicitante.id
+              end
+              from SolicitudAmistad s
+              where s.estado = 'ACEPTADA'
+                and (s.solicitante.id = :userId or s.destinatario.id = :userId)
+            )
+          )
+        order by p.createdAt desc
+        """)
+    Page<Post> findFeedForUser(@Param("userId") Long userId, Pageable pageable);
+
     @Query("select p from Post p where p.deleted = false and p.id = :id")
     Optional<Post> findActiveById(@Param("id") Long id);
 

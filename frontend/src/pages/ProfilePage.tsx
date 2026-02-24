@@ -12,6 +12,8 @@ import { useAuth } from "@/auth/AuthContext"
 import { useUsers } from "@/hooks/useUsers"
 import { useParams } from "react-router-dom"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
+import { useUserPosts } from "@/hooks/usePosts"
+import PostList from "@/components/PostList"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
@@ -156,6 +158,7 @@ const ProfilePage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Foto de perfil y gestión de usuario/amistad */}
             <div className="p-4 flex items-center justify-between ms-[13.5%]">
                 <div className="flex flex-col gap-1">
                     <h1 className="text-2xl font-bold">
@@ -240,6 +243,13 @@ const ProfilePage: React.FC = () => {
                 )}
             </div>
 
+            {/* Posts */}
+            <div className="mt-12 p-8 border-t">
+                <h2 className="text-xl font-bold mb-6 ps-4">Publicaciones</h2>
+
+                {userProfile?.id && <PostList userId={userProfile?.id} />}
+            </div>
+
             <EditProfileDialog
                 isOpen={isEditProfileDialogOpen}
                 setIsOpen={setIsEditProfileDialogOpen}
@@ -253,7 +263,7 @@ const ProfilePage: React.FC = () => {
                     handleSavePicture(file)
                 }}
             />
-        </div>
+        </div >
     )
 }
 

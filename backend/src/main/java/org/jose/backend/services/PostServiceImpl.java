@@ -104,6 +104,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Page<PostResponse> feedForCurrentUser(int page, int size) {
+        Usuario currentUser = currentUserService.getUser();
+        return postRepo.findFeedForUser(currentUser.getId(), PageRequest.of(page, size)).map(this::toResp);
+    }
+
+    @Override
     public Page<PostResponse> userPosts(Long userId, int page, int size) {
         return postRepo.findByAuthor(userId,  PageRequest.of(page, size)).map(this::toResp);
     }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { FaComment, FaEdit, FaShare, FaThumbsUp, FaTrash } from "react-icons/fa"
 import { usePostReactions, useReactToPost } from "@/hooks/usePosts"
+import type { PostDto } from "@/services/PostService"
 
 type ReactionKey = "like" | "love" | "care" | "haha" | "wow" | "sad" | "angry"
 
@@ -25,23 +26,6 @@ const REACTION_META: Record<ReactionKey, { label: string; emoji: string; cls: st
     wow: { label: "Me asombra", emoji: "😮", cls: "text-purple-600" },
     sad: { label: "Me entristece", emoji: "😢", cls: "text-sky-600" },
     angry: { label: "Me enfada", emoji: "😡", cls: "text-red-600" },
-}
-
-export type PostDto = {
-    id: number
-    authorId: number
-    authorName: string
-    authorSlug: string
-    authorPhotoUrl?: string | null
-    content?: string | null
-    mediaUrl?: string | null
-    createdAt: string
-    updatedAt?: string | null
-    edited?: boolean
-    postType: "text" | "profile_photo" | "banner_photo"
-    // likesCount?: number
-    // likedByMe?: boolean
-    commentsCount?: number
 }
 
 type Props = {
