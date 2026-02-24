@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react"
 import { useFriends } from "./useFriends"
+import { useQueryClient } from "@tanstack/react-query"
 
 export interface FriendshipStatus {
     status: "friend" | "incoming" | "outgoing" | "none"
@@ -9,6 +10,7 @@ export interface FriendshipStatus {
 
 export function useFriendshipActions(context: "inicio" | "solicitudes" | "todos" | "cumpleaños" = "inicio") {
     const inFlight = useRef<Set<number>>(new Set())
+    const queryClient = useQueryClient()
 
     const {
         amigos,
@@ -50,22 +52,49 @@ export function useFriendshipActions(context: "inicio" | "solicitudes" | "todos"
 
     // Cancelar solicitud
     function handleCancel(requestId: number) {
-        cancelarSolicitud.mutate(requestId)
+        cancelarSolicitud.mutate(requestId, {
+            onSuccess: () => queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
+        })
     }
 
     // Aceptar solicitud
     function handleAccept(requestId: number) {
-        aceptarSolicitud.mutate(requestId)
+        aceptarSolicitud.mutate(requestId, {
+            onSuccess: () => queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
+        })
     }
 
     // Rechazar solicitud
     function handleReject(requestId: number) {
-        rechazarSolicitud.mutate(requestId)
+        rechazarSolicitud.mutate(requestId, {
+            onSuccess: () => queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
+        })
     }
 
     // Eliminar amigo
     function handleRemove(userId: number) {
-        eliminarAmigo.mutate(userId)
+        eliminarAmigo.mutate(userId, {
+            onSuccess: () => {
+                queryClient.setQueriesData<any>(
+                    { queryKey: ["posts", "feed"] },
+                    (oldData: any) => {
+                        if (!oldData) return oldData
+
+                        return {
+                            ...oldData,
+                            content: oldData.content.filter(
+                                (post: any) => post.authorId !== userId
+                            )
+                        }
+                    }
+                )
+
+                //delay para que alcance a eliminar las publicaciones del feed antes de volver a consultar
+                setTimeout(() => {
+                    queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
+                }, 5000)
+            }
+        })
     }
 
     return {
