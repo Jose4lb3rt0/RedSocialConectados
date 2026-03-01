@@ -95,6 +95,7 @@ const FriendsPage: React.FC = () => {
                                             <UserCard
                                                 key={r.id}
                                                 user={u}
+                                                userId={u.id}
                                                 status="incoming"
                                                 incomingRequestId={r.id}
                                                 isAccepting={isAccepting}
@@ -120,6 +121,7 @@ const FriendsPage: React.FC = () => {
                                             <UserCard
                                                 key={r.id}
                                                 user={u}
+                                                userId={u.id}
                                                 status="outgoing"
                                                 outgoingRequestId={r.id}
                                                 isCancelling={isCancelling}
@@ -145,6 +147,7 @@ const FriendsPage: React.FC = () => {
                                     <UserCard
                                         key={u.id}
                                         user={u}
+                                        userId={u.id}
                                         status={status}
                                         outgoingRequestId={outgoingRequestId}
                                         incomingRequestId={incomingRequestId}

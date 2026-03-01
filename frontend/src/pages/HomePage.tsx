@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "../auth/AuthContext"
-import Layout from "../components/Navigation/Layout"
-import PostComposer from "../components/PostComposer"
-import PostList from "../components/PostList"
+import Layout from "../components/navigation/Layout"
+import PostComposer from "../components/posts/PostComposer"
+import PostList from "../components/posts/PostList"
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth()

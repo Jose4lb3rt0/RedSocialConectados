@@ -6,7 +6,7 @@ import VerifyAccountPage from "../pages/VerifyAccountPage"
 import CheckEmailPage from "../pages/CheckEmailPage"
 import { RequireAuth, RequireGuest } from "./Guards"
 import ProfilePage from "../pages/ProfilePage"
-import Layout from "../components/Navigation/Layout"
+import Layout from "../components/navigation/Layout"
 import FriendsPage from "@/pages/FriendsPage"
 import ResultsPage from "@/pages/ResultsPage"
 

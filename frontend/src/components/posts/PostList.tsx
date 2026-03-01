@@ -1,9 +1,9 @@
-import { useAuth } from "../auth/AuthContext"
-import { useDeletePost, useFeed, useUserPosts } from "../hooks/usePosts"
+import { useAuth } from "../../auth/AuthContext"
+import { useDeletePost, useFeed, useUserPosts } from "../../hooks/usePosts"
 import { useState } from "react"
-import CreatePostDialog from "./dialogs/CreatePostDialog"
-import PostViewDialog from "./dialogs/PostViewDialog"
-import Post from "./posts/Post"
+import CreatePostDialog from "../dialogs/CreatePostDialog"
+import PostViewDialog from "../dialogs/PostViewDialog"
+import Post from "./Post"
 import type { PostDto } from "@/services/PostService"
 
 interface PostListProps {

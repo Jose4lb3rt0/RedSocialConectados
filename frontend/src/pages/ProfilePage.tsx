@@ -13,7 +13,7 @@ import { useUsers } from "@/hooks/useUsers"
 import { useParams } from "react-router-dom"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
 import { useUserPosts } from "@/hooks/usePosts"
-import PostList from "@/components/PostList"
+import PostList from "@/components/posts/PostList"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
