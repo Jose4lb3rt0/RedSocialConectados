@@ -40,7 +40,7 @@ export function usePost(postId?: number | null) {
         queryFn: () => obtenerPost(id as number),
         initialData: () => {
             // Acá se hidrata desde feeds en caché para evitar parpadeos
-            const feeds = queryClient.getQueriesData<any>({ queryKey: ["feed"] })
+            const feeds = queryClient.getQueriesData<any>({ queryKey: ["posts", "feed"] })
             for (const [, page] of feeds) {
                 const found = page?.content?.find((p: any) => p.id === id)
                 if (found) return found
@@ -64,7 +64,7 @@ export function useCreatePost() {
     return useMutation({
         mutationFn: crearPost,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feed"] })
+            queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
         }
     })
 }
@@ -77,7 +77,7 @@ export function useUpdatePost() {
             // Detalle
             queryClient.setQueryData(["post", vars.id], updated)
             // Feed en caché
-            queryClient.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => {
+            queryClient.setQueriesData<any>({ queryKey: ["posts", "feed"] }, (old: any) => {
                 if (!old) return old
                 const next = { ...old }
                 next.content = old.content?.map((p: any) =>
@@ -93,7 +93,7 @@ export function useDeletePost() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (id: number) => eliminarPost(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["feed"] })
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
     })
 }
 
@@ -178,7 +178,7 @@ function applyCommentsDelta(queryClient: ReturnType<typeof useQueryClient>, post
     queryClient.setQueryData(["post", postId], (old: any) => //Detalle del post
         old ? { ...old, commentsCount: Math.max(0, (old.commentsCount ?? 0) + delta) } : old
     )
-    queryClient.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => { //Feed
+    queryClient.setQueriesData<any>({ queryKey: ["posts", "feed"] }, (old: any) => { //Feed
         if (!old?.content) return old
         return {
             ...old,
@@ -204,7 +204,7 @@ export function usePostReactions(postId?: number | null) {
             if (!id) return undefined
             const detail = queryClient.getQueryData<any>(["post", id]) //detalle del post
             if (detail?.reactions) return detail.reactions as ReactionSummary
-            const feeds = queryClient.getQueriesData<any>({ queryKey: ["feed"] }) //feed
+            const feeds = queryClient.getQueriesData<any>({ queryKey: ["posts", "feed"] }) //feed
             for (const [, page] of feeds) {
                 const found = page?.content?.find((p: any) => p.id === id)
                 if (found?.reactions) return found.reactions as ReactionSummary
@@ -254,7 +254,7 @@ export function useReactToPost() {
 
             qc.setQueryData(key, next) //escribe optimista
 
-            qc.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => { //feed
+            qc.setQueriesData<any>({ queryKey: ["posts", "feed"] }, (old: any) => { //feed
                 if (!old?.content) return old
                 return {
                     ...old,
@@ -276,7 +276,7 @@ export function useReactToPost() {
         onSuccess: (summary) => { //Cambia por la respuesta normalizada del backend
             const key = ["postReactions", summary.postId] as const
             qc.setQueryData(key, summary)
-            qc.setQueriesData<any>({ queryKey: ["feed"] }, (old: any) => {
+            qc.setQueriesData<any>({ queryKey: ["posts", "feed"] }, (old: any) => {
                 if (!old?.content) return old
                 return {
                     ...old,
