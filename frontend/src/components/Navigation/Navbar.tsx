@@ -5,10 +5,13 @@ import { IoLogOutSharp } from "react-icons/io5"
 import { FaHouse, FaUsers } from "react-icons/fa6"
 import { useSearchUsuarios } from "@/hooks/useSearch"
 import { Link, useSearchParams } from "react-router-dom"
+import NotificationBell from "../notifications/NotificationBell"
+import NotificationDropdown from "../notifications/NotificationDropdown"
 
 const Navbar: React.FC = () => {
     const { user, logout, isAuthenticated } = useAuth()
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
     const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [searchParams] = useSearchParams()
@@ -18,6 +21,17 @@ const Navbar: React.FC = () => {
         const queryFromUrl = searchParams.get("query")
         if (queryFromUrl) setSearchQuery(queryFromUrl)
     }, [searchParams])
+
+    const handleOpenNotifications = () => {
+        setIsNotificationsOpen(!isNotificationsOpen)
+        setIsSearchBarFocused(false)
+        setIsUserMenuOpen(false)
+    }
+    const handleOpenUserMenu = () => {
+        setIsUserMenuOpen(!isUserMenuOpen)
+        setIsSearchBarFocused(false)
+        setIsNotificationsOpen(false)
+    }
 
     return (
         <nav className="w-full border-b-blue-200 bg-blue-50 border-b-1 h-14"> {/* altura fija */}
@@ -107,9 +121,20 @@ const Navbar: React.FC = () => {
 
                 {/* Bloquesito 3 */}
                 {isAuthenticated && user ? (
-                    <li className="justify-self-end py-0 px-4 h-full flex items-center">
-                        <div className="relative cursor-pointer" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
-                            <button className={`${user?.profilePicture?.imagenUrl ? "p-0" : "p-2"} flex items-center rounded-full border border-gray-300`}>
+                    <li className="justify-self-end py-0 px-4 h-full flex items-center gap-2">
+                        {/* Notificaciones */}
+                        <div className="relative">
+                            <NotificationBell
+                                onClick={handleOpenNotifications}
+                            />
+                            <NotificationDropdown
+                                open={isNotificationsOpen}
+                                onClose={() => setIsNotificationsOpen(false)}
+                            />
+                        </div>
+                        {/* Menu de usuario */}
+                        <div className="relative cursor-pointer" onClick={handleOpenUserMenu}>
+                            <button className={`${user?.profilePicture?.imagenUrl ? "p-0" : "p-2"} h-8 w-8 flex items-center rounded-full border border-gray-300`}>
                                 {user?.profilePicture?.imagenUrl ? (
                                     <img
                                         src={user.profilePicture.imagenUrl}
@@ -127,7 +152,7 @@ const Navbar: React.FC = () => {
                                     <FaChevronUp className="text-white h-2 w-auto" />
                                 )}
                             </div>
-                            <div className={`absolute right-1 top-10 z-20 w-52 ${isUserMenuOpen ? "block" : "hidden"} bg-blue-100 rounded-lg shadow-lg`}>
+                            <div className={`absolute right-1 top-10 z-20 w-52 ${isUserMenuOpen ? "block" : "hidden"} bg-white border border-gray-200 rounded-lg shadow-lg`}>
                                 <ul className="py-1">
                                     <li>
                                         <Link
