@@ -70,5 +70,16 @@ public class NotificacionServiceImpl implements NotificacionService {
                     }
                 });
     }
+
+    @Override
+    public void crearNotificacion(Usuario usuario, String tipo, String mensaje, Long referenciaId, String referenciaTipo) {
+        Notificacion notificacion = new Notificacion();
+        notificacion.setUsuario(usuario);
+        notificacion.setTipo(tipo);
+        notificacion.setMensaje(mensaje);
+        notificacion.setReferenciaId(referenciaId);
+        notificacion.setReferenciaTipo(referenciaTipo);
+        notificacionRepository.save(notificacion);
+    }
 }
 

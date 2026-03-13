@@ -34,6 +34,7 @@ public class PostComentarioServiceImpl implements PostComentarioService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private ImagenService imagenService;
     @Autowired private CurrentUserService currentUserService;
+    @Autowired private NotificacionService notificacionService;
 
     private String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -78,7 +79,19 @@ public class PostComentarioServiceImpl implements PostComentarioService {
             Imagen img = imagenService.uploadImagen(file);
             nuevo.setImagen(img);
         }
-        return toResp(postComentarioRepository.save(nuevo));
+        PostComentario saved = postComentarioRepository.save(nuevo);
+
+        if (!post.getAuthor().getId().equals(author.getId())) {
+            notificacionService.crearNotificacion(
+                    post.getAuthor(),
+                    "POST_COMMENT",
+                    String.format("%s %s comentó en tu publicación", author.getName(), author.getSurname()),
+                    post.getId(),
+                    "POST"
+            );
+        }
+
+        return toResp(saved);
     }
 
     @Override

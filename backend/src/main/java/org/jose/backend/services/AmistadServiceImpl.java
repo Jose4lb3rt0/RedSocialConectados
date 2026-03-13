@@ -22,11 +22,13 @@ public class AmistadServiceImpl implements AmistadService {
     private final SolicitudAmistadRepository repo;
     private final UsuarioRepository usuarioRepo;
     private final CurrentUserService currentUser;
+    private final NotificacionService notificacionService;
 
-    public AmistadServiceImpl(SolicitudAmistadRepository repo, UsuarioRepository usuarioRepo, CurrentUserService currentUser) {
+    public AmistadServiceImpl(SolicitudAmistadRepository repo, UsuarioRepository usuarioRepo, CurrentUserService currentUser, NotificacionService notificacionService) {
         this.repo = repo;
         this.usuarioRepo = usuarioRepo;
         this.currentUser = currentUser;
+        this.notificacionService = notificacionService;
     }
 
     private UserSummaryResponse toUserSummary(Usuario u) {
@@ -64,6 +66,15 @@ public class AmistadServiceImpl implements AmistadService {
         s.setDestinatario(to);
         s.setEstado(SolicitudEstado.PENDIENTE);
         s = repo.save(s);
+
+        notificacionService.crearNotificacion(
+                to,
+                "FRIEND_REQUEST",
+                String.format("%s %s te ha enviado una solicitud de amistad", me.getName(), me.getSurname()),
+                s.getId(),
+                "FRIEND_REQUEST"
+        );
+
         return toDto(s);
     }
 
@@ -91,6 +102,15 @@ public class AmistadServiceImpl implements AmistadService {
         s.setEstado(SolicitudEstado.ACEPTADA);
         s.setRespondedAt(Instant.now());
         s = repo.save(s);
+
+        notificacionService.crearNotificacion(
+                s.getSolicitante(),
+                "FRIEND_ACCEPTED",
+                String.format("%s %s ha aceptado tu solicitud de amistad", me.getName(), me.getSurname()),
+                s.getId(),
+                "FRIEND_REQUEST"
+        );
+
         return toDto(s);
 
     }

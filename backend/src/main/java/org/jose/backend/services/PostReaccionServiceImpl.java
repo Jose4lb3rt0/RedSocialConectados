@@ -20,12 +20,14 @@ public class PostReaccionServiceImpl implements PostReaccionService {
     private final PostRepository postRepo;
     private final PostReaccionRepository reaccionRepo;
     private final CurrentUserService currentUser;
+    private final NotificacionService notificacionService;
 
     public PostReaccionServiceImpl(PostRepository postRepo, PostReaccionRepository reaccionRepo,
-            CurrentUserService currentUser) {
+            CurrentUserService currentUser, NotificacionService notificacionService) {
         this.postRepo = postRepo;
         this.reaccionRepo = reaccionRepo;
         this.currentUser = currentUser;
+        this.notificacionService = notificacionService;
     }
 
     public ReaccionResumenResponse buildSummary(Long postId, Long userId) {
@@ -73,6 +75,16 @@ public class PostReaccionServiceImpl implements PostReaccionService {
             r.setUsuario(me);
             r.setReaccion(type);
             reaccionRepo.save(r);
+
+            if (!post.getAuthor().getId().equals(me.getId())) {
+                notificacionService.crearNotificacion(
+                        post.getAuthor(),
+                        "POST_REACTION",
+                        String.format("%s %s reaccionó a tu publicación", me.getName(), me.getSurname()),
+                        post.getId(),
+                        "POST"
+                );
+            }
         }
         return buildSummary(postId, me.getId());
     }
