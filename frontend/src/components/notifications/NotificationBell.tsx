@@ -8,17 +8,11 @@ type Props = {
 
 const NotificationBell: React.FC<Props> = ({ onClick }) => {
     const { data: unread = 0 } = useUnreadNotificationsCount()
-    const [isOpen, setIsOpen] = useState(false)
-
-    const handleClick = () => {
-        setIsOpen(!isOpen)
-        onClick?.()
-    }
 
     return (
         <button
             type="button"
-            onClick={handleClick}
+            onClick={onClick}
             className="p-2 relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 cursor-pointer border border-gray-300"
         >
             <FaBell className="text-gray-500" />

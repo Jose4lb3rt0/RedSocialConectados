@@ -5,6 +5,8 @@ import {
     useNotifications
 } from "@/hooks/useNotifications"
 import type { NotificationDto } from "@/services/NotificationService"
+import { use, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 type Props = {
     open: boolean
@@ -12,9 +14,18 @@ type Props = {
 }
 
 const NotificationDropdown: React.FC<Props> = ({ open, onClose }) => {
+    const qc = useQueryClient()
     const { data, isLoading, isError } = useNotifications(0, 10)
     const markOne = useMarkNotificationAsRead()
     const markAll = useMarkAllNotificationsAsRead()
+    
+    // Refrescar notificaciones al abrir el dropdown, 
+    // ignora el stale_time para mostrar siempre las más recientes, 
+    // de igual forma el stale_time sigue aplicando para evitar 
+    // recargas constantes mientras el dropdown está abierto.    
+    useEffect(() => {
+        if (open) qc.invalidateQueries({ queryKey: ["notifications", 0] })
+    }, [open, qc])
 
     if (!open) return null
 
