@@ -12,8 +12,8 @@ import { useAuth } from "@/auth/AuthContext"
 import { useUsers } from "@/hooks/useUsers"
 import { useParams } from "react-router-dom"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
-import { useUserPosts } from "@/hooks/usePosts"
 import PostList from "@/components/posts/PostList"
+import PostComposer from "@/components/posts/PostComposer"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
@@ -246,6 +246,12 @@ const ProfilePage: React.FC = () => {
             {/* Posts */}
             <div className="mt-12 p-8 border-t">
                 <h2 className="text-xl font-bold mb-6 ps-4">Publicaciones</h2>
+
+                {isAuthenticated && isOwnProfile && (
+                    <div className="mb-4">
+                        <PostComposer />
+                    </div>
+                )}
 
                 {userProfile?.id && <PostList userId={userProfile?.id} />}
             </div>

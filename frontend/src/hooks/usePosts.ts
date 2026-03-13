@@ -63,8 +63,39 @@ export function useCreatePost() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: crearPost,
-        onSuccess: () => {
+        onSuccess: (created: PostDto) => {
+            // Feed (Home)
             queryClient.invalidateQueries({ queryKey: ["posts", "feed"] })
+
+            // Perfil (posts del autor)
+            if (created?.authorId) {
+                // Inserción optimista en la primera página, si ya existe en caché
+                queryClient.setQueryData<Page<PostDto>>(
+                    ["post", "user", created.authorId, 0],
+                    (old) => {
+                        if (!old?.content) return old
+                        const withoutDup = old.content.filter(p => p.id !== created.id)
+                        const nextContent = [created, ...withoutDup].slice(0, old.size ?? withoutDup.length + 1)
+                        return {
+                            ...old,
+                            content: nextContent,
+                            totalElements: (old.totalElements ?? nextContent.length) + 1,
+                        }
+                    }
+                )
+
+                // Asegura refetch de cualquier página abierta del perfil del autor
+                queryClient.invalidateQueries({
+                    predicate: (q) =>
+                        Array.isArray(q.queryKey) &&
+                        q.queryKey[0] === "post" &&
+                        q.queryKey[1] === "user" &&
+                        q.queryKey[2] === created.authorId
+                })
+            } else {
+                // fallback
+                queryClient.invalidateQueries({ queryKey: ["post", "user"] })
+            }
         }
     })
 }
