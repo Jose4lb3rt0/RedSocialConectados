@@ -5,19 +5,28 @@ import CreatePostDialog from "../dialogs/CreatePostDialog";
 import PostViewDialog from "../dialogs/PostViewDialog";
 import Post from "./Post";
 import type { PostDto } from "@/services/PostService";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PostListProps {
   userId?: number;
+  initialPostId?: number | null
 }
 
-export default function PostList({ userId }: PostListProps) {
+export default function PostList({ userId, initialPostId }: PostListProps) {
   const feedQuery = useFeed();
   const userPostsQuery = useUserPosts(userId || 0);
   const deletee = useDeletePost();
+  const qc = useQueryClient()
   const [isEditingPostId, setIsEditingPostId] = useState<number | null>(null);
   const [isViewingPostId, setIsViewingPostId] = useState<number | null>(null);
   const { user } = useAuth();
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!initialPostId) return
+    qc.invalidateQueries({ queryKey: ["post", initialPostId] })
+    setIsViewingPostId(initialPostId)
+  }, [initialPostId, qc])
 
   const query = userId ? userPostsQuery : feedQuery;
   const {

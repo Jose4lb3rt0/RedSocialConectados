@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { useAuth } from "../auth/AuthContext"
 import Layout from "../components/navigation/Layout"
 import PostComposer from "../components/posts/PostComposer"
@@ -6,13 +6,15 @@ import PostList from "../components/posts/PostList"
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth()
+  const [searchParams] = useSearchParams()
+  const openPostId = searchParams.get("postId") ? Number(searchParams.get("postId")) : null
 
   if (isAuthenticated) {
     return (
       <Layout>
         <div className="py-4">
           <PostComposer />
-          <PostList />
+          <PostList initialPostId={openPostId} />
         </div>
       </Layout>
     )

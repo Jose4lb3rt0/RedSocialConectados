@@ -4,9 +4,17 @@ import { FaBirthdayCake, FaUser, FaUserClock, FaUserFriends, FaUsers } from "rea
 import { FaGear } from "react-icons/fa6"
 import { UserCard } from "@/components/friends/UserCard"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
+import { useSearchParams } from "react-router-dom"
+
+type FriendsTab = "inicio" | "solicitudes" | "todos" | "cumpleaños"
+
+const VALID_TABS: FriendsTab[] = ["inicio", "solicitudes", "todos", "cumpleaños"]
 
 const FriendsPage: React.FC = () => {
-    const [tab, setTab] = useState<"inicio" | "solicitudes" | "todos" | "cumpleaños">("inicio")
+    const [searchParams] = useSearchParams()
+    const tabParam = searchParams.get("tab") as FriendsTab | null
+    const initialTab: FriendsTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "inicio"
+    const [tab, setTab] = useState<FriendsTab>(initialTab)
     const { user } = useAuth()
 
     const {

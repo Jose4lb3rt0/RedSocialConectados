@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   useMarkAllNotificationsAsRead,
   useMarkNotificationAsRead,
@@ -34,6 +34,7 @@ const REACTION_EMOJI: Record<string, string> = {
 
 const NotificationDropdown: React.FC<Props> = ({ open, onClose }) => {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const {
     data,
     isLoading,
@@ -93,21 +94,72 @@ const NotificationDropdown: React.FC<Props> = ({ open, onClose }) => {
     }
   };
 
+  const getDestination = (n: NotificationDto): string => {
+    switch (n.tipo) {
+      case "POST_COMMENT":
+      case "POST_REACTION":
+        return n.referenciaId ? `/?postId=${n.referenciaId}` : "/";
+      case "FRIEND_REQUEST":
+        return "/friends?tab=solicitudes";
+      case "FRIEND_ACCEPTED":
+        return "/friends?tab=todos";
+      default:
+        return "/";
+    }
+  };
+
   const renderItem = (n: NotificationDto) => {
     const unreadBg = n.leida ? "" : "bg-blue-50";
 
-    const content = (
+    const handleClick = () => {
+      if (!n.leida) markOne.mutate(n.id);
+
+      // Invalidar antes de navegar
+      if (
+        (n.tipo === "POST_REACTION" || n.tipo === "POST_COMMENT") &&
+        n.referenciaId
+      ) {
+        qc.invalidateQueries({ queryKey: ["post", n.referenciaId] });
+      }
+      if (n.tipo === "FRIEND_REQUEST" || n.tipo === "FRIEND_ACCEPTED") {
+        qc.invalidateQueries({ queryKey: ["friendRequests", "inbox"] });
+        qc.invalidateQueries({ queryKey: ["friends", "list"] });
+      }
+
+      onClose?.();
+      navigate(getDestination(n));
+    };
+
+    return (
       <div
+        key={n.id}
+        onClick={handleClick}
         className={`flex items-start gap-3 px-3 py-2 hover:bg-blue-50 cursor-pointer ${unreadBg}`}
       >
         {/* Avatar */}
         <div className="relative shrink-0 mt-0.5">
-          {n.actorPhotoUrl ? (
-            <img
-              src={n.actorPhotoUrl}
-              alt={n.actorName ?? ""}
-              className="w-9 h-9 rounded-full object-cover border border-gray-200"
-            />
+          {n.actorSlug ? (
+            <Link
+              to={`/u/${n.actorSlug}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!n.leida) markOne.mutate(n.id);
+                onClose?.();
+              }}
+              className="block"
+            >
+              {n.actorPhotoUrl ? (
+                <img
+                  src={n.actorPhotoUrl}
+                  alt={n.actorName ?? ""}
+                  className="w-9 h-9 rounded-full object-cover border border-gray-200 hover:opacity-90"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center border border-gray-200">
+                  <FaUser className="text-gray-400" style={{ fontSize: 14 }} />
+                </div>
+              )}
+            </Link>
           ) : (
             <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center border border-gray-200">
               <FaUser className="text-gray-400" style={{ fontSize: 14 }} />
@@ -116,7 +168,8 @@ const NotificationDropdown: React.FC<Props> = ({ open, onClose }) => {
 
           {/* Icono de tipo de notificación */}
           <span className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-gray-100 flex items-center justify-center">
-            {tipoIcon(n)}{" "}{/* El render lee el tipo de notificación y si se trata de una reacción, muestra el emoji correspondiente */}
+            {tipoIcon(n)}{" "}
+            {/* El render lee el tipo de notificación y si se trata de una reacción, muestra el emoji correspondiente */}
           </span>
         </div>
 
@@ -134,36 +187,6 @@ const NotificationDropdown: React.FC<Props> = ({ open, onClose }) => {
         {!n.leida && (
           <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
         )}
-      </div>
-    );
-
-    const handleClick = () => {
-      if (!n.leida) markOne.mutate(n.id);
-      onClose?.();
-    };
-
-    // Si hay referencia a un post o usuario, enlazamos; si no, solo div clickeable
-    if (n.referenciaTipo === "POST" && n.referenciaId) {
-      return (
-        <Link key={n.id} to={`/posts/${n.referenciaId}`} onClick={handleClick}>
-          {content}
-        </Link>
-      );
-    }
-
-    if (n.referenciaTipo === "USER" && n.referenciaId) {
-      // Aquí asumimos que más adelante podrías mapear id → slug;
-      // por ahora solo hacemos cierre del dropdown.
-      return (
-        <div key={n.id} onClick={handleClick}>
-          {content}
-        </div>
-      );
-    }
-
-    return (
-      <div key={n.id} onClick={handleClick}>
-        {content}
       </div>
     );
   };

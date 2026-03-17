@@ -12,6 +12,7 @@ export type NotificationDto = {
     actorId?: number | null
     actorName?: string | null
     actorPhotoUrl?: string | null
+    actorSlug?: string | null
     reaccionTipo?: string | null
 }
 

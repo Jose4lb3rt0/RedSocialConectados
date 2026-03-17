@@ -38,6 +38,7 @@ public class NotificacionServiceImpl implements NotificacionService {
                         n.getActor() != null ? n.getActor().getId() : null,
                         n.getActor() != null ? n.getActor().getName() + " " + n.getActor().getSurname() : null,
                         n.getActor() != null && n.getActor().getProfilePicture() != null ? n.getActor().getProfilePicture().getImagenUrl() : null,
+                        n.getActor() != null ? n.getActor().getSlug() : null,
                         n.getReaccionTipo()
                 ));
     }
