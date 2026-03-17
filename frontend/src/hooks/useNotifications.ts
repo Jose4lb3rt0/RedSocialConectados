@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   contarNotificacionesNoLeidas,
   marcarNotificacionComoLeida,
@@ -8,10 +13,15 @@ import {
 } from "@/services/NotificationService";
 import type { Page } from "@/services/UserService";
 
-export function useNotifications(page = 0, size = 10, isDropdownOpen = false) {
-  return useQuery<Page<NotificationDto>>({
-    queryKey: ["notifications", page],
-    queryFn: () => obtenerNotificaciones(page, size),
+export function useNotifications(size = 10, isDropdownOpen = false) {
+  return useInfiniteQuery<Page<NotificationDto>>({
+    queryKey: ["notifications"],
+    queryFn: ({ pageParam = 0 }) => obtenerNotificaciones(pageParam as number, size),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.number + 1 < lastPage.totalPages
+        ? lastPage.number + 1
+        : undefined,
     staleTime: 30_000,
     refetchInterval: isDropdownOpen ? 15_000 : false,
   });
@@ -30,20 +40,18 @@ export function useMarkNotificationAsRead() {
   return useMutation({
     mutationFn: (id: number) => marcarNotificacionComoLeida(id),
     onSuccess: (_v, id) => {
-      // Actualizar lista en caché
-      qc.setQueriesData<Page<NotificationDto>>(
-        { queryKey: ["notifications"] },
-        (old) => {
-          if (!old?.content) return old;
-          return {
-            ...old,
-            content: old.content.map((n) =>
+      qc.setQueryData<any>(["notifications"], (old: any) => {
+        if (!old?.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            content: page.content.map((n: NotificationDto) =>
               n.id === id ? { ...n, leida: true } : n,
             ),
-          };
-        },
-      );
-      // Refrescar contador
+          })),
+        };
+      });
       qc.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
   });
@@ -54,16 +62,19 @@ export function useMarkAllNotificationsAsRead() {
   return useMutation({
     mutationFn: () => marcarTodasNotificacionesComoLeidas(),
     onSuccess: () => {
-      qc.setQueriesData<Page<NotificationDto>>(
-        { queryKey: ["notifications"] },
-        (old) => {
-          if (!old?.content) return old;
-          return {
-            ...old,
-            content: old.content.map((n) => ({ ...n, leida: true })),
-          };
-        },
-      );
+      qc.setQueryData<any>(["notifications"], (old: any) => {
+        if (!old?.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            content: page.content.map((n: NotificationDto) => ({
+              ...n,
+              leida: true,
+            })),
+          })),
+        };
+      });
       qc.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
   });
