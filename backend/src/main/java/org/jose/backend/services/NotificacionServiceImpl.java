@@ -34,7 +34,11 @@ public class NotificacionServiceImpl implements NotificacionService {
                         n.getReferenciaId(),
                         n.getReferenciaTipo(),
                         n.getCreadaEn(),
-                        n.isLeida()
+                        n.isLeida(),
+                        n.getActor() != null ? n.getActor().getId() : null,
+                        n.getActor() != null ? n.getActor().getName() + " " + n.getActor().getSurname() : null,
+                        n.getActor() != null && n.getActor().getProfilePicture() != null ? n.getActor().getProfilePicture().getImagenUrl() : null,
+                        n.getReaccionTipo()
                 ));
     }
 
@@ -72,13 +76,15 @@ public class NotificacionServiceImpl implements NotificacionService {
     }
 
     @Override
-    public void crearNotificacion(Usuario usuario, String tipo, String mensaje, Long referenciaId, String referenciaTipo) {
+    public void crearNotificacion(Usuario usuario, String tipo, String mensaje, Long referenciaId, String referenciaTipo, Usuario actor, String reaccionTipo) {
         Notificacion notificacion = new Notificacion();
         notificacion.setUsuario(usuario);
         notificacion.setTipo(tipo);
         notificacion.setMensaje(mensaje);
         notificacion.setReferenciaId(referenciaId);
         notificacion.setReferenciaTipo(referenciaTipo);
+        notificacion.setActor(actor);
+        notificacion.setReaccionTipo(reaccionTipo);
         notificacionRepository.save(notificacion);
     }
 }

@@ -36,6 +36,13 @@ public class Notificacion {
     @Column(name = "referencia_tipo", length = 50)
     private String referenciaTipo; // POST, USER, COMMENT, etc.
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "actor_id")
+    private Usuario actor;
+
+    @Column(name = "reaccion_tipo", length = 20)
+    private String reaccionTipo; // LIKE, LOVE, CARE, HAHA, WOW, SAD, ANGRY — solo para notificaciones REACTION
+
     @CreationTimestamp
     @Column(name = "creada_en", nullable = false, updatable = false)
     private Instant creadaEn;
@@ -90,6 +97,14 @@ public class Notificacion {
     public void setReferenciaTipo(String referenciaTipo) {
         this.referenciaTipo = referenciaTipo;
     }
+
+    public Usuario getActor() { return actor; }
+
+    public void setActor(Usuario actor) { this.actor = actor; }
+
+    public String getReaccionTipo() { return reaccionTipo; }
+
+    public void setReaccionTipo(String reaccionTipo) { this.reaccionTipo = reaccionTipo; }
 
     public Instant getCreadaEn() {
         return creadaEn;

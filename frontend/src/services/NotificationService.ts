@@ -9,6 +9,10 @@ export type NotificationDto = {
     referenciaTipo?: string | null
     creadaEn: string
     leida: boolean
+    actorId?: number | null
+    actorName?: string | null
+    actorPhotoUrl?: string | null
+    reaccionTipo?: string | null
 }
 
 export async function obtenerNotificaciones(page = 0, size = 10): Promise<Page<NotificationDto>> {

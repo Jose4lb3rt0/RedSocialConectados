@@ -11,8 +11,12 @@ public class NotificacionResponse {
     private String referenciaTipo;
     private Instant creadaEn;
     private boolean leida;
+    private Long actorId;
+    private String actorName;
+    private String actorPhotoUrl;
+    private String reaccionTipo;
 
-    public NotificacionResponse(Long id, String tipo, String mensaje, Long referenciaId, String referenciaTipo, Instant creadaEn, boolean leida) {
+    public NotificacionResponse(Long id, String tipo, String mensaje, Long referenciaId, String referenciaTipo, Instant creadaEn, boolean leida, Long actorId, String actorName, String actorPhotoUrl, String reaccionTipo) {
         this.id = id;
         this.tipo = tipo;
         this.mensaje = mensaje;
@@ -20,6 +24,10 @@ public class NotificacionResponse {
         this.referenciaTipo = referenciaTipo;
         this.creadaEn = creadaEn;
         this.leida = leida;
+        this.actorId = actorId;
+        this.actorName = actorName;
+        this.actorPhotoUrl = actorPhotoUrl;
+        this.reaccionTipo = reaccionTipo;
     }
 
     public Long getId() {
@@ -49,5 +57,13 @@ public class NotificacionResponse {
     public boolean isLeida() {
         return leida;
     }
+
+    public Long getActorId() { return actorId; }
+
+    public String getActorName() { return actorName; }
+
+    public String getActorPhotoUrl() { return actorPhotoUrl; }
+
+    public String getReaccionTipo() { return reaccionTipo; }
 }
 

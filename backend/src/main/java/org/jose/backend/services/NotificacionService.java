@@ -10,6 +10,6 @@ public interface NotificacionService {
     long contarNoLeidas();
     void marcarComoLeida(Long id);
     void marcarTodasComoLeidas();
-    void crearNotificacion(Usuario usuario, String tipo, String mensaje, Long referenciaId, String referenciaTipo);
+    void crearNotificacion(Usuario usuario, String tipo, String mensaje, Long referenciaId, String referenciaTipo, Usuario actor, String reaccionTipo);
 }
 

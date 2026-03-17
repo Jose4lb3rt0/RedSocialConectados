@@ -72,7 +72,9 @@ public class AmistadServiceImpl implements AmistadService {
                 "FRIEND_REQUEST",
                 String.format("%s %s te ha enviado una solicitud de amistad", me.getName(), me.getSurname()),
                 s.getId(),
-                "FRIEND_REQUEST"
+                "FRIEND_REQUEST",
+                me,
+                null
         );
 
         return toDto(s);
@@ -108,7 +110,9 @@ public class AmistadServiceImpl implements AmistadService {
                 "FRIEND_ACCEPTED",
                 String.format("%s %s ha aceptado tu solicitud de amistad", me.getName(), me.getSurname()),
                 s.getId(),
-                "FRIEND_REQUEST"
+                "FRIEND_REQUEST",
+                me,
+                null
         );
 
         return toDto(s);

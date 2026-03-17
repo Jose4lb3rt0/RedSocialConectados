@@ -23,7 +23,7 @@ public class PostReaccionServiceImpl implements PostReaccionService {
     private final NotificacionService notificacionService;
 
     public PostReaccionServiceImpl(PostRepository postRepo, PostReaccionRepository reaccionRepo,
-            CurrentUserService currentUser, NotificacionService notificacionService) {
+                                   CurrentUserService currentUser, NotificacionService notificacionService) {
         this.postRepo = postRepo;
         this.reaccionRepo = reaccionRepo;
         this.currentUser = currentUser;
@@ -82,7 +82,9 @@ public class PostReaccionServiceImpl implements PostReaccionService {
                         "POST_REACTION",
                         String.format("%s %s reaccionó a tu publicación", me.getName(), me.getSurname()),
                         post.getId(),
-                        "POST"
+                        "POST",
+                        me,
+                        type.name()
                 );
             }
         }

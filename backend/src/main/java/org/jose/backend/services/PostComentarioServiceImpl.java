@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -45,7 +45,7 @@ public class PostComentarioServiceImpl implements PostComentarioService {
     private PostCommentResponse toResp(PostComentario c) {
         PostCommentResponse resp = new PostCommentResponse();
         resp.setId(c.getId());
-        resp.setPostId(c.getPost().getId()); 
+        resp.setPostId(c.getPost().getId());
         resp.setAuthorId(c.getAuthor().getId());
         resp.setAuthorName(c.getAuthor().getName() + " " + c.getAuthor().getSurname());
         resp.setAuthorSlug(c.getAuthor().getSlug());
@@ -87,7 +87,9 @@ public class PostComentarioServiceImpl implements PostComentarioService {
                     "POST_COMMENT",
                     String.format("%s %s comentó en tu publicación", author.getName(), author.getSurname()),
                     post.getId(),
-                    "POST"
+                    "POST",
+                    author,
+                    null
             );
         }
 
