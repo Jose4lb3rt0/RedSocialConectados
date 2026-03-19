@@ -42,7 +42,7 @@ export async function listarMensajes(conversacionId: number, page = 0, size = 30
 export async function enviarMensajeHttp(conversacionId: number, contenido: string): Promise<MensajeDto> {
     return apiFetch(`/chat/conversaciones/${conversacionId}/mensajes`, {
         method: "POST",
-        body: JSON.stringify(contenido)
+        body: JSON.stringify({ contenido }),
     })
 }
 

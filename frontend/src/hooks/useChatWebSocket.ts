@@ -2,8 +2,7 @@ import { Client } from "@stomp/stompjs"
 import { useAuth } from "@/auth/AuthContext"
 import type { MensajeDto } from "@/services/ChatService"
 import { useQueryClient } from "@tanstack/react-query"
-import { useCallback, useEffect, useReducer, useRef } from "react"
-import SockJS from "sockjs-client"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { actualizarPreviewConversacion, agregarMensajeAlCache } from "./useChats"
 
 export type TypingEvent = {
@@ -18,26 +17,60 @@ type UseChatWebSocketOptions = {
     onLeido?: (conversacionId: number) => void
 }
 
+// Singleton fuera de React — un solo cliente para toda la app
+let globalClient: Client | null = null
+let globalToken: string | null = null
+let connecting = false // evita doble conexión por StrictMode
+
 export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
     const { token, isAuthenticated } = useAuth()
     const qc = useQueryClient()
-    const clientRef = useRef<Client | null>(null)
     const optionsRef = useRef(options)
+    const [connected, setConnected] = useState(false)
 
-    // Mantener las opciones actualizadas sin reconectar
     useEffect(() => {
         optionsRef.current = options
     })
 
     useEffect(() => {
-        if (!isAuthenticated || !token) return
+        if (!isAuthenticated || !token) {
+            if (globalClient) {
+                globalClient.deactivate()
+                globalClient = null
+                globalToken = null
+                connecting = false
+            }
+            setConnected(false)
+            return
+        }
+
+        // Ya conectado con el mismo token — sincronizar estado
+        if (globalClient?.connected && globalToken === token) {
+            setConnected(true)
+            return
+        }
+
+        // Evitar doble conexión por StrictMode o rerenders
+        if (connecting && globalToken === token) return
+
+        // Token nuevo — desconectar cliente anterior
+        if (globalClient) {
+            globalClient.deactivate()
+            globalClient = null
+        }
+
+        connecting = true
+        globalToken = token
 
         const client = new Client({
-            webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+            brokerURL: "ws://localhost:8080/ws/websocket",
             connectHeaders: { Authorization: `Bearer ${token}` },
             reconnectDelay: 5000,
             onConnect: () => {
-                // Mensajes entrantes
+                connecting = false
+                setConnected(true)
+                console.log("[WS] Conectado")
+
                 client.subscribe("/user/queue/mensajes", (frame) => {
                     const mensaje: MensajeDto = JSON.parse(frame.body)
                     agregarMensajeAlCache(qc, mensaje)
@@ -45,78 +78,58 @@ export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
                     optionsRef.current.onMensaje?.(mensaje)
                 })
 
-                // Indicador de escritura
                 client.subscribe("/user/queue/typing", (frame) => {
                     const event: TypingEvent = JSON.parse(frame.body)
                     optionsRef.current.onTyping?.(event)
                 })
 
-                // Confirmaciones de lectura
                 client.subscribe("/user/queue/leido", (frame) => {
                     const conversacionId: number = JSON.parse(frame.body)
-
-                    // Marcar mensajes leidos en la caché con QueryClient
                     qc.setQueryData<any>(["chat", "mensajes", conversacionId], (old: any) => {
-                        if (!old.pages) return old
-
+                        if (!old?.pages) return old
                         return {
                             ...old,
                             pages: old.pages.map((page: any) => ({
                                 ...page,
-                                content: page.content.map((m: MensajeDto) =>
-                                    ({ ...m, leido: true })
-                                ),
+                                content: page.content.map((m: MensajeDto) => ({ ...m, leido: true })),
                             })),
                         }
                     })
-
                     optionsRef.current.onLeido?.(conversacionId)
                 })
             },
-            onDisconnect: () => { console.log("[WS] Desconectado") },
-            onStompError: (frame) => { console.error("[WS] Error STOMP:", frame.headers["message"]) }
+            onDisconnect: () => {
+                connecting = false
+                setConnected(false)
+                console.log("[WS] Desconectado")
+            },
+            onStompError: (frame) => {
+                connecting = false
+                setConnected(false)
+                console.error("[WS] Error STOMP:", frame.headers["message"])
+            },
         })
 
         client.activate()
-        clientRef.current = client
+        globalClient = client
 
-        return () => {
-            client.deactivate(),
-                clientRef.current = null
-        }
     }, [isAuthenticated, token, qc])
 
-    // Enviar mensaje por WebSocket
-    const enviarMensaje = useCallback((conversacionId: number, contenido: string) => {
-        if (!clientRef.current?.connected) return
-
-        clientRef.current?.publish({
-            destination: "/app/chat.mensaje",
-            body: JSON.stringify({ conversacionId, contenido }),
-        })
-    }, [])
-
-    // Enviar estado de escritura con debounce incorporado
     const enviarTyping = useCallback((conversacionId: number, escribiendo: boolean) => {
-        if (!clientRef.current?.connected) return
-
-        clientRef.current?.publish({
+        if (!globalClient?.connected) return
+        globalClient.publish({
             destination: "/app/chat.typing",
             body: JSON.stringify({ conversacionId, escribiendo }),
         })
     }, [])
 
-    // Notificar que se leyeron los mensajes
     const enviarLeido = useCallback((conversacionId: number) => {
-        if (!clientRef.current?.connected) return
-        
-        clientRef.current?.publish({
+        if (!globalClient?.connected) return
+        globalClient.publish({
             destination: "/app/chat.leido",
             body: JSON.stringify({ conversacionId }),
         })
     }, [])
 
-    const isConnected = () => clientRef.current?.connected ?? false
-
-    return { enviarMensaje, enviarTyping, enviarLeido, isConnected }
+    return { enviarTyping, enviarLeido, connected }
 }

@@ -4,6 +4,7 @@ import { useEnviarMensaje, useEnviarMensajeConImagen, useMarcarComoLeidos, useMe
 import type { MensajeDto } from "@/services/ChatService"
 import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react"
 import { FaImage, FaPaperPlane, FaTimes, FaUser } from "react-icons/fa"
+import { IoCheckmarkDoneOutline, IoCheckmarkOutline } from "react-icons/io5"
 
 type Props = {
     conversacionId: number
@@ -13,7 +14,7 @@ type Props = {
 
 export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuarioPhotoUrl }: Props) {
     const { user } = useAuth()
-    const { cerrarChat, enviarTyping, enviarLeido, typingState } = useChat()
+    const { cerrarChat, enviarTyping, enviarLeido, typingState, connected } = useChat()
     const [texto, setTexto] = useState("")
     const [minimizado, setMinimizado] = useState(false)
     const endRef = useRef<HTMLDivElement>(null)
@@ -98,6 +99,12 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
                     </div>
                 )}
                 <span className="text-sm font-medium flex-1 truncate">{otroUsuarioName}</span>
+                
+                {/* Indicador de conexión WebSocket */}
+                <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${connected ? "bg-green-400" : "bg-gray-400"}`}
+                    title={connected ? "Conectado" : "Conectando..."}
+                />
                 <button
                     onClick={(e) => { e.stopPropagation(); cerrarChat(conversacionId) }}
                     className="hover:bg-blue-700 rounded p-1"
@@ -132,13 +139,12 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
                                             <img src={m.mediaUrl} alt="imagen" className="rounded max-w-full mb-1" />
                                         )}
 
-                                        {/* Quitando las comillas que encierran el mensaje desde la bd - provisional */}
-                                        {m.contenido && <p>{m.contenido.replace(/^"|"$/g, "")}</p>}
+                                        {m.contenido && <p>{m.contenido}</p>}
 
-                                        <span className={`text-xs mt-0.5 block text-right ${esMio ? "text-blue-200" : "text-gray-400"}`}>
-                                            {formatHora(m.creadoEn)}
+                                        <span className={`flex items-center mt-0.5 text-right ${esMio ? "text-blue-200" : "text-gray-400"}`}>
+                                            <span className="text-xs">{formatHora(m.creadoEn)}</span>
                                             {esMio && (
-                                                <span className="ml-1">{m.leido ? "✓✓" : "✓"}</span>
+                                                <span className="ml-1 text-lg">{m.leido ? <IoCheckmarkDoneOutline /> : <IoCheckmarkOutline />}</span>
                                             )}
                                         </span>
 
@@ -176,13 +182,14 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
                             onChange={handleTextoChange}
                             onKeyDown={handleKeyDown}
                             rows={1}
-                            placeholder="Aa"
+                            placeholder={connected ? "Aa" : "Conectando..."}
+                            disabled={!connected}
                             className="flex-1 resize-none text-sm border rounded-full px-3 py-1.5 focus:outline-none focus:border-blue-400"
                             style={{ maxHeight: 80 }}
                         />
                         <button
                             onClick={handleEnviar}
-                            disabled={!texto.trim()}
+                            disabled={!texto.trim() || !connected}
                             className="text-blue-600 hover:text-blue-700 disabled:text-gray-300 p-1 shrink-0"
                         >
                             <FaPaperPlane style={{ fontSize: 16 }} />

@@ -87,11 +87,6 @@ const Post: React.FC<Props> = ({ post, canManage = false, onEdit, onDelete, onCo
             return REACTION_META[key]?.emoji || ""
         })
 
-    useEffect(() => {
-        console.log("reactions (normalizado):", reactions)
-        console.log("myReaction:", myReaction, "activeMeta:", activeMeta)
-    }, [reactions, myReaction, activeMeta])
-
     return (
         <div id={`post-${post.id}`} className="border rounded">
             <div className="flex items-center text-sm text-gray-600 p-3">

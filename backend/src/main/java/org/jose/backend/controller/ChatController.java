@@ -42,11 +42,13 @@ public class ChatController {
         return chatService.listarMensajes(conversacionId, PageRequest.of(page, size));
     }
 
+    record EnviarMensajeRequest (String contenido) {}
+
     @PostMapping("/conversaciones/{conversacionId}/mensajes")
     public ResponseEntity<MensajeResponse> enviarMensaje(
             @PathVariable Long conversacionId,
-            @RequestBody String contenido) {
-        return ResponseEntity.ok(chatService.enviarMensaje(conversacionId, contenido));
+            @RequestBody EnviarMensajeRequest request) {
+        return ResponseEntity.ok(chatService.enviarMensaje(conversacionId, request.contenido));
     }
 
     @PostMapping(value = "/conversaciones/{conversacionId}/mensajes/imagen", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

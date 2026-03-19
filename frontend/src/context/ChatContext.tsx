@@ -21,12 +21,12 @@ type ChatContextType = {
     setPanelVisible: (v: boolean | ((prev: boolean) => boolean)) => void
 
     // WebSocket
-    enviarMensaje: (conversacionId: number, contenido: string) => void
     enviarTyping: (conversacionId: number, escribiendo: boolean) => void
     enviarLeido: (conversacionId: number) => void
 
     // Typing state por conversación
     typingState: TypingState
+    connected: boolean
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -48,7 +48,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, [])
 
-    const { enviarMensaje, enviarTyping, enviarLeido } = useChatWebSocket({ onTyping: handleTyping })
+    const { enviarTyping, enviarLeido, connected } = useChatWebSocket({ onTyping: handleTyping })
 
     const abrirChat = useCallback((ventana: VentanaChat) => {
         setVentanasAbiertas((prev) => {
@@ -73,10 +73,10 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             cerrarChat,
             panelVisible,
             setPanelVisible,
-            enviarMensaje,
             enviarTyping,
             enviarLeido,
-            typingState
+            typingState,
+            connected,
         }}>
             {children}
         </ChatContext.Provider>
