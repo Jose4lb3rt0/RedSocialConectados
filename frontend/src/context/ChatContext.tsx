@@ -18,7 +18,7 @@ type ChatContextType = {
 
     // Panel flotante visible
     panelVisible: boolean
-    setPanelVisible: (v: boolean) => void
+    setPanelVisible: (v: boolean | ((prev: boolean) => boolean)) => void
 
     // WebSocket
     enviarMensaje: (conversacionId: number, contenido: string) => void
