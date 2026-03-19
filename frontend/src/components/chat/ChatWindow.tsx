@@ -13,7 +13,7 @@ type Props = {
 
 export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuarioPhotoUrl }: Props) {
     const { user } = useAuth()
-    const { cerrarChat, enviarMensaje: enviarWs, enviarTyping, enviarLeido, typingState } = useChat()
+    const { cerrarChat, enviarTyping, enviarLeido, typingState } = useChat()
     const [texto, setTexto] = useState("")
     const [minimizado, setMinimizado] = useState(false)
     const endRef = useRef<HTMLDivElement>(null)
@@ -47,8 +47,7 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
         const contenido = texto.trim()
         if (!contenido) return
 
-        // Envío por WS y de paso por HTTP por persistencia
-        enviarWs(conversacionId, contenido)
+        // Envío solo por HTTP - el backend notifica al destinatario por WS
         enviarMensaje.mutate(contenido)
         setTexto("")
 
@@ -85,7 +84,7 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
     const formatHora = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 
     return (
-        <div className="w-72 bg-white border border-gray-300 rounded-t-lg shadow-xl flex flex-col">
+        <div className="w-72 bg-white border border-gray-300 rounded-t-lg shadow-xl flex flex-col max-h-[420px]">
             {/* Header */}
             <div
                 className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-t-lg cursor-pointer select-none"
@@ -110,7 +109,7 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
             {!minimizado && (
                 <>
                     {/* Mensajes */}
-                    <div className="flex-1 h-64 overflow-y-auto px-3 py-2 space-y-1 flex flex-col">
+                    <div className="h-64 overflow-y-auto px-3 py-2 space-y-1 flex flex-col">
                         {hasNextPage && (
                             <button
                                 onClick={() => fetchNextPage()}
@@ -127,17 +126,22 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
                                     <div className={`max-w-[80%] px-3 py-1.5 rounded-2xl text-sm ${esMio
                                         ? "bg-blue-600 text-white rounded-br-sm"
                                         : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                                        }`}>
+                                        }`}
+                                    >
                                         {m.tipo === "IMAGE" && m.mediaUrl && (
                                             <img src={m.mediaUrl} alt="imagen" className="rounded max-w-full mb-1" />
                                         )}
-                                        {m.contenido && <p>{m.contenido}</p>}
+
+                                        {/* Quitando las comillas que encierran el mensaje desde la bd - provisional */}
+                                        {m.contenido && <p>{m.contenido.replace(/^"|"$/g, "")}</p>}
+
                                         <span className={`text-xs mt-0.5 block text-right ${esMio ? "text-blue-200" : "text-gray-400"}`}>
                                             {formatHora(m.creadoEn)}
                                             {esMio && (
                                                 <span className="ml-1">{m.leido ? "✓✓" : "✓"}</span>
                                             )}
                                         </span>
+
                                     </div>
                                 </div>
                             )

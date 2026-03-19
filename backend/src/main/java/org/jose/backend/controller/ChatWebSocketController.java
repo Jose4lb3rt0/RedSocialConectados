@@ -22,27 +22,17 @@ public class ChatWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
     private final ConversacionRepository conversacionRepo;
-    private final MensajeRepository mensajeRepo;
+    //private final MensajeRepository mensajeRepo;
     private final UsuarioRepository usuarioRepo;
 
-    public ChatWebSocketController(SimpMessagingTemplate messagingTemplate, ChatService chatService, ConversacionRepository conversacionRepo, MensajeRepository mensajeRepo, UsuarioRepository usuarioRepo) {
+    public ChatWebSocketController(SimpMessagingTemplate messagingTemplate, ChatService chatService, ConversacionRepository conversacionRepo, UsuarioRepository usuarioRepo) {
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
         this.conversacionRepo = conversacionRepo;
-        this.mensajeRepo = mensajeRepo;
         this.usuarioRepo = usuarioRepo;
     }
 
     // ---------- Payload de entrada ---------- //
-
-    public static class EnviarMensajePayload {
-        private Long conversacionId;
-        private String contenido;
-        public Long getConversacionId() { return conversacionId; }
-        public void setConversacionId(Long conversacionId) { this.conversacionId = conversacionId; }
-        public String getContenido() { return contenido; }
-        public void setContenido(String contenido) { this.contenido = contenido; }
-    }
 
     public static class TypingPayload {
         private Long conversacionId;
@@ -78,46 +68,8 @@ public class ChatWebSocketController {
     // ---------- Handlers STOMP ---------- //
 
     /**
-     * Cliente envía a /app/chat.mensaje
-     * Servidor guarda y reenvía a /user/{destinatarioEmail}/queue/mensajes
-     */
-
-    @MessageMapping("/chat.mensaje")
-    public void enviarMensaje(@Payload EnviarMensajePayload payload, Principal principal) {
-        if (principal == null) return;
-
-        MensajeResponse mensaje = chatService.enviarMensaje(
-                payload.getConversacionId(),
-                payload.getContenido()
-        );
-
-        // Obtener el destinatario para enrutar el mensaje
-        Conversacion conv = conversacionRepo.findById(payload.getConversacionId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        Usuario remitente = usuarioRepo.findByEmail(principal.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        Usuario destinatario = conv.getOtroParticipante(remitente.getId());
-
-        // Enviar al destinatario
-        messagingTemplate.convertAndSendToUser(
-                destinatario.getEmail(),
-                "/queue/mensajes",
-                mensaje
-        );
-
-        // Confirmar al remitente (para sincronizar múltiples pestañas)
-        messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/mensajes",
-                mensaje
-        );
-    }
-
-    /**
-     * Cliente envía a /app/chat.typing
-     * Servidor reenvía al otro participante como evento de typing
+     * Indicador de escritura
+     * Cliente envía a /app/chat.typing y el servidor reenvía al otro participante como evento de typing
      */
     @MessageMapping("/chat.typing")
     public void typing(@Payload TypingPayload payload, Principal principal) {
@@ -139,8 +91,8 @@ public class ChatWebSocketController {
     }
 
     /**
-     * Cliente envía a /app/chat.leido
-     * Servidor marca como leídos y notifica al otro participante
+     * Confirmación de lectura
+     * Cliente envía a /app/chat.leido y el servidor marca como leídos y notifica al otro participante
      */
     @MessageMapping("/chat.leido")
     public void leido(@Payload LeidoPayload payload, Principal principal) {

@@ -88,14 +88,18 @@ export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
 
     // Enviar mensaje por WebSocket
     const enviarMensaje = useCallback((conversacionId: number, contenido: string) => {
+        if (!clientRef.current?.connected) return
+
         clientRef.current?.publish({
             destination: "/app/chat.mensaje",
             body: JSON.stringify({ conversacionId, contenido }),
         })
     }, [])
-    
+
     // Enviar estado de escritura con debounce incorporado
     const enviarTyping = useCallback((conversacionId: number, escribiendo: boolean) => {
+        if (!clientRef.current?.connected) return
+
         clientRef.current?.publish({
             destination: "/app/chat.typing",
             body: JSON.stringify({ conversacionId, escribiendo }),
@@ -104,6 +108,8 @@ export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
 
     // Notificar que se leyeron los mensajes
     const enviarLeido = useCallback((conversacionId: number) => {
+        if (!clientRef.current?.connected) return
+        
         clientRef.current?.publish({
             destination: "/app/chat.leido",
             body: JSON.stringify({ conversacionId }),

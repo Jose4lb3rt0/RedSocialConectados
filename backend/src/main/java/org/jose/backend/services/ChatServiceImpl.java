@@ -12,6 +12,7 @@ import org.jose.backend.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,13 +30,15 @@ public class ChatServiceImpl implements ChatService {
     private final UsuarioRepository usuarioRepo;
     private final CurrentUserService currentUserService;
     private final ImagenService imagenService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public ChatServiceImpl(ConversacionRepository conversacionRepo, MensajeRepository mensajeRepo, UsuarioRepository usuarioRepo, CurrentUserService currentUserService, ImagenService imagenService) {
+    public ChatServiceImpl(ConversacionRepository conversacionRepo, MensajeRepository mensajeRepo, UsuarioRepository usuarioRepo, CurrentUserService currentUserService, ImagenService imagenService, SimpMessagingTemplate messagingTemplate) {
         this.conversacionRepo = conversacionRepo;
         this.mensajeRepo = mensajeRepo;
         this.usuarioRepo = usuarioRepo;
         this.currentUserService = currentUserService;
         this.imagenService = imagenService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     private MensajeResponse toMensajeResponse(Mensaje m) {
@@ -89,8 +92,7 @@ public class ChatServiceImpl implements ChatService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes chatear contigo mismo");
         }
 
-        Usuario otro = usuarioRepo.findById(otroUsuarioId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        Usuario otro = usuarioRepo.findById(otroUsuarioId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
         Conversacion conv = conversacionRepo.findByParticipantes(me.getId(), otroUsuarioId)
                 .orElseGet(() -> {
@@ -107,16 +109,14 @@ public class ChatServiceImpl implements ChatService {
     @Transactional(readOnly = true)
     public Page<ConversacionResponse> listarConversaciones(Pageable pageable) {
         Usuario me = currentUserService.getUser();
-        return conversacionRepo.findByUsuario(me.getId(), pageable)
-                .map(c -> toConversacionResponse(c, me.getId()));
+        return conversacionRepo.findByUsuario(me.getId(), pageable).map(c -> toConversacionResponse(c, me.getId()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<MensajeResponse> listarMensajes(Long conversacionId, Pageable pageable) {
         Usuario me = currentUserService.getUser();
-        Conversacion conv = conversacionRepo.findById(conversacionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversación no encontrada"));
+        Conversacion conv = conversacionRepo.findById(conversacionId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversación no encontrada"));
 
         if (!conv.getParticipante1().getId().equals(me.getId()) &&
                 !conv.getParticipante2().getId().equals(me.getId())) {
@@ -152,7 +152,17 @@ public class ChatServiceImpl implements ChatService {
         conv.setUltimoMensajeEn(Instant.now());
         conversacionRepo.save(conv);
 
-        return toMensajeResponse(m);
+        MensajeResponse response = toMensajeResponse(m);
+
+        // Notificar en tiempo real por WS
+        Usuario destinatario = conv.getOtroParticipante(me.getId());
+        messagingTemplate.convertAndSendToUser(
+            destinatario.getEmail(),
+            "/queue/mensajes",
+            response
+        );
+
+        return response;
     }
 
     @Override
@@ -160,6 +170,7 @@ public class ChatServiceImpl implements ChatService {
         Usuario me = currentUserService.getUser();
         Conversacion conv = conversacionRepo.findById(conversacionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversación no encontrada"));
+
         if (!conv.getParticipante1().getId().equals(me.getId()) &&
                 !conv.getParticipante2().getId().equals(me.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a esta conversación");
@@ -178,7 +189,17 @@ public class ChatServiceImpl implements ChatService {
         conv.setUltimoMensajeEn(Instant.now());
         conversacionRepo.save(conv);
 
-        return toMensajeResponse(m);
+        MensajeResponse response = toMensajeResponse(m);
+
+        // Notificar al destinatario en tiempo real por WebSocket
+        Usuario destinatario = conv.getOtroParticipante(me.getId());
+        messagingTemplate.convertAndSendToUser(
+                destinatario.getEmail(),
+                "/queue/mensajes",
+                response
+        );
+
+        return response;
     }
 
     @Override

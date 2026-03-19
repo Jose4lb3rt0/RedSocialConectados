@@ -1,4 +1,4 @@
-import { FaCamera, FaPencilAlt, FaPlus, FaUser } from "react-icons/fa"
+import { FaCamera, FaComment, FaPencilAlt, FaPlus, FaUser } from "react-icons/fa"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { editProfileSchema, type EditProfileFormData } from "@/schemas/userSchemas"
@@ -14,6 +14,8 @@ import { useParams } from "react-router-dom"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
 import PostList from "@/components/posts/PostList"
 import PostComposer from "@/components/posts/PostComposer"
+import { useChat } from "@/context/ChatContext"
+import { useObtenerOCrearConversacion } from "@/hooks/useChats"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
@@ -24,6 +26,8 @@ const ProfilePage: React.FC = () => {
     const [changeMyPhotoMode, setChangeMyPhotoMode] = useState<"profile" | "banner">("profile")
     const [isChangeMyPictureDialogOpen, setIsChangeMyPictureDialogOpen] = useState(false)
     const queryClient = useQueryClient()
+    const { abrirChat } = useChat()
+    const obtenerOCrear = useObtenerOCrearConversacion()
 
     // Query principal para la página (no para el modal)
     const { data: userProfile, isLoading, error } = perfil(slug?.slug || "")
@@ -42,6 +46,17 @@ const ProfilePage: React.FC = () => {
         isRejecting,
         isRemoving
     } = useFriendshipActions("inicio")
+
+    const handleEnviarMensaje = async () => {
+        if (!userProfile) return
+
+        const conv = await obtenerOCrear.mutateAsync(userProfile.id)
+        abrirChat({
+            conversacionId: conv.id,
+            otroUsuarioName: conv.otroUsuarioName,
+            otroUsuarioPhotoUrl: conv.otroUsuarioPhotoUrl,
+        })
+    }
 
     const { reset } = useForm<EditProfileFormData>({
         resolver: zodResolver(editProfileSchema),
@@ -188,6 +203,17 @@ const ProfilePage: React.FC = () => {
 
                         {!isOwnProfile && friendshipStatus && (
                             <div className="flex gap-2">
+                                {/* Enviar mensaje */}
+                                <button
+                                    onClick={handleEnviarMensaje}
+                                    disabled={obtenerOCrear.isPending}
+                                    className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md transition-colors"
+                                >
+                                    <FaComment />
+                                    {obtenerOCrear.isPending ? "..." : "Enviar mensaje"}
+                                </button>
+
+                                {/* Gestiones de amistad */}
                                 {friendshipStatus.status === "none" && (
                                     <button
                                         onClick={() => handleAdd(userProfile!.id)}
