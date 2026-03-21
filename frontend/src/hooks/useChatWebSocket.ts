@@ -4,6 +4,7 @@ import type { MensajeDto } from "@/services/ChatService"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { actualizarPreviewConversacion, agregarMensajeAlCache } from "./useChats"
+import type { NotificationDto } from "@/services/NotificationService"
 
 export type TypingEvent = {
     conversacionId: number
@@ -15,6 +16,7 @@ type UseChatWebSocketOptions = {
     onMensaje?: (mensaje: MensajeDto) => void
     onTyping?: (event: TypingEvent) => void
     onLeido?: (conversacionId: number) => void
+    onNotificacion?: (notificacion: NotificationDto) => void
 }
 
 // Singleton fuera de React — un solo cliente para toda la app
@@ -96,6 +98,28 @@ export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
                         }
                     })
                     optionsRef.current.onLeido?.(conversacionId)
+                })
+
+                client.subscribe("/user/queue/notificaciones", (frame) => {
+                    const notificacion: NotificationDto = JSON.parse(frame.body)
+
+                    qc.setQueryData<any>(["notifications"], (old: any) => {
+                        if (!old?.pages) return old
+                        const yaExiste = old.pages[0]?.content?.some((n: NotificationDto) => n.id === notificacion.id)
+                        if (yaExiste) return old
+
+                        return {
+                            ...old,
+                            pages: [
+                                { ...old.pages[0], content: [notificacion, ...(old.pages[0]?.content ?? [])] },
+                                ...old.pages.slice(1)
+                            ]
+                        }
+                    })
+
+                    // Incrementar el contador de no leídas
+                    qc.setQueryData<number>(["notifications", "unread-count"], (old = 0) => old + 1)
+                    optionsRef.current.onNotificacion?.(notificacion)
                 })
             },
             onDisconnect: () => {

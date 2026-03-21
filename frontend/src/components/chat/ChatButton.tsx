@@ -20,7 +20,6 @@ export default function ChatMenu({ onClick }: Props) {
             otroUsuarioName: conv.otroUsuarioName,
             otroUsuarioPhotoUrl: conv.otroUsuarioPhotoUrl
         })
-        setPanelVisible(false) // Panel colocado en Layout.tsx, el contexto lo manda a abrir
     }
 
     const formatTiempo = (iso?: string | null) => {

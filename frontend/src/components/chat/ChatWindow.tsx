@@ -163,7 +163,7 @@ export default function ChatWindow({ conversacionId, otroUsuarioName, otroUsuari
                     </div>
 
                     {/* Input */}
-                    <div className="border-t px-2 py-2 flex items-end gap-2">
+                    <div className="border-t px-3 py-2 flex items-center gap-2">
                         <input
                             ref={fileInputRef}
                             type="file"

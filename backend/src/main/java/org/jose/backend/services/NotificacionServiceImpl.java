@@ -6,6 +6,7 @@ import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.NotificacionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +16,12 @@ public class NotificacionServiceImpl implements NotificacionService {
 
     private final NotificacionRepository notificacionRepository;
     private final CurrentUserService currentUserService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public NotificacionServiceImpl(NotificacionRepository notificacionRepository, CurrentUserService currentUserService) {
+    public NotificacionServiceImpl(NotificacionRepository notificacionRepository, CurrentUserService currentUserService, SimpMessagingTemplate simpMessagingTemplate) {
         this.notificacionRepository = notificacionRepository;
         this.currentUserService = currentUserService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
@@ -53,11 +56,12 @@ public class NotificacionServiceImpl implements NotificacionService {
     @Override
     public void marcarComoLeida(Long id) {
         Usuario actual = currentUserService.getUser();
-        Notificacion notificacion = notificacionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Notificación no encontrada"));
+        Notificacion notificacion = notificacionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Notificación no encontrada"));
+
         if (!notificacion.getUsuario().getId().equals(actual.getId())) {
             throw new IllegalStateException("No puedes modificar una notificación de otro usuario");
         }
+
         if (!notificacion.isLeida()) {
             notificacion.setLeida(true);
             notificacionRepository.save(notificacion);
@@ -67,6 +71,7 @@ public class NotificacionServiceImpl implements NotificacionService {
     @Override
     public void marcarTodasComoLeidas() {
         Usuario actual = currentUserService.getUser();
+
         notificacionRepository
                 .findByUsuarioOrderByCreadaEnDesc(actual, Pageable.unpaged())
                 .forEach(n -> {
@@ -87,6 +92,28 @@ public class NotificacionServiceImpl implements NotificacionService {
         notificacion.setActor(actor);
         notificacion.setReaccionTipo(reaccionTipo);
         notificacionRepository.save(notificacion);
+
+        NotificacionResponse response = new NotificacionResponse(
+                notificacion.getId(),
+                notificacion.getTipo(),
+                notificacion.getMensaje(),
+                notificacion.getReferenciaId(),
+                notificacion.getReferenciaTipo(),
+                notificacion.getCreadaEn(),
+                notificacion.isLeida(),
+                actor != null ? actor.getId() : null,
+                actor != null ? actor.getName() + " " + actor.getSurname() : null,
+                actor != null && actor.getProfilePicture() != null ? actor.getProfilePicture().getImagenUrl() : null,
+                actor != null ? actor.getSlug() : null,
+                notificacion.getReaccionTipo()
+        );
+
+        // WS
+        simpMessagingTemplate.convertAndSendToUser(
+            usuario.getEmail(),
+            "/queue/notificaciones",
+            response
+        );
     }
 }
 

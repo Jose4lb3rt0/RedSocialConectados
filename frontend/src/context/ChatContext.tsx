@@ -59,7 +59,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const nuevas = prev.length >= 3 ? prev.slice(1) : prev
             return [...nuevas, ventana]
         })
-        setPanelVisible(true)
+        // setPanelVisible(true)
     }, [])
 
     const cerrarChat = useCallback((conversacionId: number) => {

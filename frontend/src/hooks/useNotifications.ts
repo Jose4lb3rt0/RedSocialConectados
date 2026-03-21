@@ -13,7 +13,7 @@ import {
 } from "@/services/NotificationService";
 import type { Page } from "@/services/UserService";
 
-export function useNotifications(size = 10, isDropdownOpen = false) {
+export function useNotifications(size = 10) {
   return useInfiniteQuery<Page<NotificationDto>>({
     queryKey: ["notifications"],
     queryFn: ({ pageParam = 0 }) => obtenerNotificaciones(pageParam as number, size),
@@ -23,8 +23,7 @@ export function useNotifications(size = 10, isDropdownOpen = false) {
         ? lastPage.number + 1
         : undefined,
     staleTime: 30_000,
-    refetchInterval: isDropdownOpen ? 15_000 : false,
-  });
+  })
 }
 
 export function useUnreadNotificationsCount() {
