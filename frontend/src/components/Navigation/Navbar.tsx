@@ -1,21 +1,29 @@
 import { useAuth } from "../../auth/AuthContext"
-import { FaChevronDown, FaChevronUp, FaCog, FaSearch, FaUser } from "react-icons/fa"
+import { FaChevronDown, FaChevronUp, FaCog, FaComment, FaSearch, FaUser } from "react-icons/fa"
 import { useState, useEffect } from "react"
 import { IoLogOutSharp } from "react-icons/io5"
-import { FaHouse, FaUsers } from "react-icons/fa6"
+import { FaHouse, FaMessage, FaUsers } from "react-icons/fa6"
 import { useSearchUsuarios } from "@/hooks/useSearch"
 import { Link, useSearchParams } from "react-router-dom"
 import NotificationBell from "../notifications/NotificationBell"
 import NotificationDropdown from "../notifications/NotificationDropdown"
+import ChatPanel from "../chat/ChatPanel"
+import ChatButton from "../chat/ChatButton"
+import ChatMenu from "../chat/ChatButton"
+import { useChat } from "@/context/ChatContext"
 
 const Navbar: React.FC = () => {
     const { user, logout, isAuthenticated } = useAuth()
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-    const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [searchParams] = useSearchParams()
     const { data: searchResults, isLoading } = useSearchUsuarios(searchQuery)
+
+    // ui comportamiento
+    const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
+    const [isChatMenuOpen, setIsChatMenuOpen] = useState(false)
+    const { panelVisible, setPanelVisible } = useChat()
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
     useEffect(() => {
         const queryFromUrl = searchParams.get("query")
@@ -26,11 +34,23 @@ const Navbar: React.FC = () => {
         setIsNotificationsOpen(!isNotificationsOpen)
         setIsSearchBarFocused(false)
         setIsUserMenuOpen(false)
+        setIsChatMenuOpen(false)
+        setPanelVisible(false)
     }
     const handleOpenUserMenu = () => {
         setIsUserMenuOpen(!isUserMenuOpen)
         setIsSearchBarFocused(false)
         setIsNotificationsOpen(false)
+        setIsChatMenuOpen(false)
+        setPanelVisible(false)
+    }
+ 
+    const handleOpenChatMenu = () => {
+        setIsChatMenuOpen(!isChatMenuOpen)
+        setPanelVisible(!panelVisible)
+        setIsSearchBarFocused(false)
+        setIsNotificationsOpen(false)
+        setIsUserMenuOpen(false)
     }
 
     return (
@@ -122,11 +142,13 @@ const Navbar: React.FC = () => {
                 {/* Bloquesito 3 */}
                 {isAuthenticated && user ? (
                     <li className="justify-self-end py-0 px-4 h-full flex items-center gap-2">
+                        {/* Chats */}
+                        <div className="relative">
+                            <ChatMenu onClick={handleOpenChatMenu} />
+                        </div>
                         {/* Notificaciones */}
                         <div className="relative">
-                            <NotificationBell
-                                onClick={handleOpenNotifications}
-                            />
+                            <NotificationBell onClick={handleOpenNotifications} />
                             <NotificationDropdown
                                 open={isNotificationsOpen}
                                 onClose={() => setIsNotificationsOpen(false)}
@@ -217,7 +239,9 @@ const Navbar: React.FC = () => {
                     </Link>
                 )}
             </ul>
-        </nav>
+
+            {isAuthenticated && <ChatPanel />}
+        </nav >
     )
 }
 
