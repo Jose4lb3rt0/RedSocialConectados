@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
@@ -71,6 +72,7 @@ public class ChatWebSocketController {
      * Indicador de escritura
      * Cliente envía a /app/chat.typing y el servidor reenvía al otro participante como evento de typing
      */
+    @Transactional
     @MessageMapping("/chat.typing")
     public void typing(@Payload TypingPayload payload, Principal principal) {
         if (principal == null) return;
@@ -94,6 +96,7 @@ public class ChatWebSocketController {
      * Confirmación de lectura
      * Cliente envía a /app/chat.leido y el servidor marca como leídos y notifica al otro participante
      */
+    @Transactional
     @MessageMapping("/chat.leido")
     public void leido(@Payload LeidoPayload payload, Principal principal) {
         if (principal == null) return;
