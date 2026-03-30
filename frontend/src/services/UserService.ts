@@ -125,6 +125,10 @@ export async function actualizarPerfil(data: EditProfileFormData) {
     })
 }
 
+export async function contarAmigos(slug: string): Promise<number> {
+    return apiFetch(`/users/slug/${encodeURIComponent(slug)}/friends-count`)
+}
+
 export async function listaUsuarios(): Promise<Page<UserSummary>> {
     return apiFetch("/users", { method: "GET" })
 }

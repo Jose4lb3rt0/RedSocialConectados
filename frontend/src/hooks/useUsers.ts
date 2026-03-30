@@ -9,6 +9,7 @@ import {
     listaUsuarios as listaUsuariosService,
     type Page,
     type UserSummary,
+    contarAmigos,
 } from "../services/UserService"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
@@ -19,6 +20,15 @@ function getErrorMessage(error: any) {
         error?.data?.message ||
         error?.data?.error ||
         "No se pudo completar el registro."
+}
+
+export function useFriendsCount(slug: string | undefined) {
+    return useQuery<number>({
+        queryKey: ["friends", "count", slug],
+        queryFn: () => contarAmigos(slug!),
+        enabled: !!slug,
+        staleTime: 30_000
+    })
 }
 
 export function useUsers() {

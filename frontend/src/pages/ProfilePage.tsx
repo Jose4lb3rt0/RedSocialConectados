@@ -9,7 +9,7 @@ import ChangeMyPictureDialog from "@/components/dialogs/ChangeMyPictureDialog"
 import { apiFetch } from "@/api/apibase"
 import { FaMountainSun } from "react-icons/fa6"
 import { useAuth } from "@/auth/AuthContext"
-import { useUsers } from "@/hooks/useUsers"
+import { useFriendsCount, useUsers } from "@/hooks/useUsers"
 import { useParams } from "react-router-dom"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
 import PostList from "@/components/posts/PostList"
@@ -31,6 +31,7 @@ const ProfilePage: React.FC = () => {
 
     // Query principal para la página (no para el modal)
     const { data: userProfile, isLoading, error } = perfil(slug?.slug || "")
+    const { data: friendsCount = 0 } = useFriendsCount(slug?.slug)
     const isOwnProfile = yo.user?.id === userProfile?.id
 
     const {
@@ -179,7 +180,9 @@ const ProfilePage: React.FC = () => {
                     <h1 className="text-2xl font-bold">
                         {userProfile?.name} {userProfile?.surname}
                     </h1>
-                    <p className="text-gray-600 font-semibold">XX amigos</p>
+                    <p className="text-gray-600 font-semibold">
+                        {friendsCount} {friendsCount === 1 ? "amigo" : "amigos"}
+                    </p>
                 </div>
                 {isAuthenticated && (
                     <div className="flex items-center gap-4">

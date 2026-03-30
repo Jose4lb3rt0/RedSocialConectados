@@ -6,6 +6,7 @@ import org.jose.backend.dto.Post.CreatePostRequest;
 import org.jose.backend.dto.Profile.UserProfileResponse;
 import org.jose.backend.model.Imagen;
 import org.jose.backend.model.Usuario;
+import org.jose.backend.repository.SolicitudAmistadRepository;
 import org.jose.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,11 +24,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired private ImagenService imagenService;
     @Autowired private PostService postService;
     @Autowired private CurrentUserService currentUser;
+    @Autowired
+    private SolicitudAmistadRepository solicitudAmistadRepository;
 
     @Override
     public Usuario getUsuarioPorEmail(String email) {
         return usuarioRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+    }
+
+    @Override
+    public Usuario getUsuarioPorSlug(String slug) {
+        return usuarioRepository.findBySlug(slug).orElseThrow(() -> new RuntimeException("Perfil no encontrado: " + slug));
     }
 
     @Override

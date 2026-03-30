@@ -31,6 +31,13 @@ public interface SolicitudAmistadRepository extends JpaRepository<SolicitudAmist
            """)
     Page<SolicitudAmistad> findAmigos(@Param("userId") Long userId, Pageable pageable);
 
+    @Query("""
+           select count(s) from SolicitudAmistad s
+           where s.estado = 'ACEPTADA'
+           and (s.solicitante.id = :userId or s.destinatario.id = :userId) 
+           """)
+    long countAmigos(@Param("userId") Long userId);
+
     Optional<SolicitudAmistad> findByIdAndDestinatarioId(Long id, Long destinatarioId);
     Optional<SolicitudAmistad> findByIdAndSolicitanteId(Long id, Long solicitanteId);
     Optional<SolicitudAmistad> findBySolicitanteIdAndDestinatarioId(Long solicitanteId, Long destinatarioId);

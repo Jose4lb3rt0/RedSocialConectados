@@ -11,6 +11,7 @@ import java.io.IOException;
 
 public interface UsuarioService {
     Usuario getUsuarioPorEmail(String email);
+    Usuario getUsuarioPorSlug(String slug);
     UserProfileResponse getUsuarioPerfil(String email);
     UserProfileResponse actualizarPerfil(String email, EditProfileRequest req);
     UserProfileResponse actualizarFotoPerfil(String email, MultipartFile file) throws IOException;

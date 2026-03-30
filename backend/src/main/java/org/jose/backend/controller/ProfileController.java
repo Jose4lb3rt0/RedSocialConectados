@@ -3,6 +3,7 @@ package org.jose.backend.controller;
 import org.jose.backend.dto.Profile.EditProfileRequest;
 import org.jose.backend.dto.Profile.UserProfileResponse;
 import org.jose.backend.model.Usuario;
+import org.jose.backend.repository.SolicitudAmistadRepository;
 import org.jose.backend.security.JwtTokenUtil;
 import org.jose.backend.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class ProfileController {
 
     @Autowired private UsuarioService usuarioService;
     @Autowired private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private SolicitudAmistadRepository solicitudAmistadRepository;
 
     @GetMapping("/me")
     public ResponseEntity<?> me(@RequestHeader("Authorization") String auth) {
@@ -49,6 +52,13 @@ public class ProfileController {
     @GetMapping("/slug/{slug}")
     public ResponseEntity<UserProfileResponse> getProfileBySlug(@PathVariable String slug) throws IOException {
         return ResponseEntity.ok(usuarioService.getProfileBySlug(slug));
+    }
+
+    @GetMapping("/slug/{slug}/friends-count")
+    public ResponseEntity<Long> getFriendsCount(@PathVariable String slug) {
+        Usuario usuario = usuarioService.getUsuarioPorSlug(slug);
+        long count = solicitudAmistadRepository.countAmigos(usuario.getId());
+        return ResponseEntity.ok(count);
     }
 
     @GetMapping("/profile")
