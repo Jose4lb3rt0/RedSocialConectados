@@ -7,9 +7,10 @@ import {
     obtenerPerfil,
     obtenerPerfilPorSlug,
     listaUsuarios as listaUsuariosService,
+    contarAmigos,
+    obtenerAmigosDeUsuario,
     type Page,
     type UserSummary,
-    contarAmigos,
 } from "../services/UserService"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
@@ -27,7 +28,16 @@ export function useFriendsCount(slug: string | undefined) {
         queryKey: ["friends", "count", slug],
         queryFn: () => contarAmigos(slug!),
         enabled: !!slug,
-        staleTime: 30_000
+        staleTime: 30_000,
+    })
+}
+
+export function useProfileFriends(slug: string | undefined, size = 9) {
+    return useQuery<Page<UserSummary>>({
+        queryKey: ["friends", "profile", slug],
+        queryFn: () => obtenerAmigosDeUsuario(slug!, 0, size),
+        enabled: !!slug,
+        staleTime: 30_000,
     })
 }
 

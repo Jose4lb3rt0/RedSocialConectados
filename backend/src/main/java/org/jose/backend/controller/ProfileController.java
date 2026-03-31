@@ -1,5 +1,6 @@
 package org.jose.backend.controller;
 
+import org.jose.backend.dto.Friends.UserSummaryResponse;
 import org.jose.backend.dto.Profile.EditProfileRequest;
 import org.jose.backend.dto.Profile.UserProfileResponse;
 import org.jose.backend.model.Usuario;
@@ -7,6 +8,8 @@ import org.jose.backend.repository.SolicitudAmistadRepository;
 import org.jose.backend.security.JwtTokenUtil;
 import org.jose.backend.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,8 +24,7 @@ public class ProfileController {
 
     @Autowired private UsuarioService usuarioService;
     @Autowired private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private SolicitudAmistadRepository solicitudAmistadRepository;
+    @Autowired private SolicitudAmistadRepository solicitudAmistadRepository;
 
     @GetMapping("/me")
     public ResponseEntity<?> me(@RequestHeader("Authorization") String auth) {
@@ -59,6 +61,29 @@ public class ProfileController {
         Usuario usuario = usuarioService.getUsuarioPorSlug(slug);
         long count = solicitudAmistadRepository.countAmigos(usuario.getId());
         return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/slug/{slug}/amigos")
+    public ResponseEntity<Page<UserSummaryResponse>> getAmigos(
+            @PathVariable String slug,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size) {
+        Usuario usuario = usuarioService.getUsuarioPorSlug(slug);
+        Page<UserSummaryResponse> amigos = solicitudAmistadRepository
+                .findAmigos(usuario.getId(), PageRequest.of(page, size))
+                .map(s -> {
+                    Usuario amigo = s.getSolicitante().getId().equals(usuario.getId())
+                            ? s.getDestinatario()
+                            : s.getSolicitante();
+                    UserSummaryResponse dto = new UserSummaryResponse();
+                    dto.setId(amigo.getId());
+                    dto.setAuthorName(amigo.getName());
+                    dto.setAuthorSurname(amigo.getSurname());
+                    dto.setAuthorSlug(amigo.getSlug());
+                    dto.setAuthorPhoto(amigo.getProfilePicture() != null ? amigo.getProfilePicture().getImagenUrl() : null);
+                    return dto;
+                });
+        return ResponseEntity.ok(amigos);
     }
 
     @GetMapping("/profile")

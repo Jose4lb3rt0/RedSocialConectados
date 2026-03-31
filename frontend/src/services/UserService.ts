@@ -129,6 +129,10 @@ export async function contarAmigos(slug: string): Promise<number> {
     return apiFetch(`/users/slug/${encodeURIComponent(slug)}/friends-count`)
 }
 
+export async function obtenerAmigosDeUsuario(slug: string, page = 0, size = 9): Promise<Page<UserSummary>> {
+    return apiFetch(`/users/slug/${encodeURIComponent(slug)}/amigos?page=${page}&size=${size}`)
+}
+
 export async function listaUsuarios(): Promise<Page<UserSummary>> {
     return apiFetch("/users", { method: "GET" })
 }

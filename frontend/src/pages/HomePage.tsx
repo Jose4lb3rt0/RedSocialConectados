@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
   if (isAuthenticated) {
     return (
       <Layout>
-        <div className="py-4">
+        <div className="py-4 max-w-lg mx-auto">
           <PostComposer />
           <PostList initialPostId={openPostId} />
         </div>

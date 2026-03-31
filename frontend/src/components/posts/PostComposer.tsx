@@ -10,7 +10,7 @@ export default function PostComposer() {
     const create = useCreatePost()
 
     return (
-        <div className="border w-full max-w-lg mx-auto rounded p-3">
+        <div className="border w-full max-w-2xl mx-auto rounded-lg p-3">
             <textarea
                 onClick={() => setIsCreatePostDialogOpen(true)}
                 className="w-full border rounded p-2"

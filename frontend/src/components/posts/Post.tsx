@@ -88,7 +88,7 @@ const Post: React.FC<Props> = ({ post, canManage = false, onEdit, onDelete, onCo
         })
 
     return (
-        <div id={`post-${post.id}`} className="border rounded">
+        <div id={`post-${post.id}`} className="border rounded-lg">
             <div className="flex items-center text-sm text-gray-600 p-3">
                 {post.authorPhotoUrl ? (
                     <img src={post.authorPhotoUrl} alt="Avatar" className="inline-block h-7 w-7 rounded-full mr-2" />

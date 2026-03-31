@@ -7,15 +7,17 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import EditProfileDialog from "@/components/dialogs/EditProfileDialog"
 import ChangeMyPictureDialog from "@/components/dialogs/ChangeMyPictureDialog"
 import { apiFetch } from "@/api/apibase"
-import { FaMountainSun } from "react-icons/fa6"
+import { FaCakeCandles, FaMountainSun } from "react-icons/fa6"
 import { useAuth } from "@/auth/AuthContext"
-import { useFriendsCount, useUsers } from "@/hooks/useUsers"
-import { useParams } from "react-router-dom"
+import { useFriendsCount, useProfileFriends, useUsers } from "@/hooks/useUsers"
+import { Link, useParams } from "react-router-dom"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
 import PostList from "@/components/posts/PostList"
 import PostComposer from "@/components/posts/PostComposer"
 import { useChat } from "@/context/ChatContext"
 import { useObtenerOCrearConversacion } from "@/hooks/useChats"
+import { sl } from "zod/v4/locales"
+import { User } from "lucide-react"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
@@ -32,6 +34,8 @@ const ProfilePage: React.FC = () => {
     // Query principal para la página (no para el modal)
     const { data: userProfile, isLoading, error } = perfil(slug?.slug || "")
     const { data: friendsCount = 0 } = useFriendsCount(slug?.slug)
+    const { data: friendsPage } = useProfileFriends(slug?.slug)
+    const friends = friendsPage?.content || [] // sacando el array
     const isOwnProfile = yo.user?.id === userProfile?.id
 
     const {
@@ -117,7 +121,7 @@ const ProfilePage: React.FC = () => {
     const friendshipStatus = userProfile ? getStatus(userProfile.id) : null
 
     return (
-        <div className="w-full max-w-6xl mx-auto">
+        <div className="w-full max-w-5xl mx-auto">
             {/* Banner */}
             <div className={`${userProfile?.bannerPicture?.imagenUrl ? '' : 'bg-blue-300'} w-full h-50 relative rounded-b-md`}>
                 {/* Imagen de banner */}
@@ -272,17 +276,93 @@ const ProfilePage: React.FC = () => {
                 )}
             </div>
 
-            {/* Posts */}
-            <div className="mt-12 p-8 border-t">
-                <h2 className="text-xl font-bold mb-6 ps-4">Publicaciones</h2>
+            {/* BIO, AMIGOS | POSTS (2 columnas) */}
+            <div className="mt-12 border-t flex gap-4 p-4">
 
-                {isAuthenticated && isOwnProfile && (
-                    <div className="mb-4">
-                        <PostComposer />
+                {/* Columna izquierda */}
+                <div className="w-90 shrink-0 flex flex-col gap-4">
+
+                    {/* Biografía */}
+                    {(userProfile?.biography || isOwnProfile) && (
+                        <div className="bg-white rounded-lg border border-gray-200 p-4">
+                            <h2 className="font-bold text-lg mb-3">Información</h2>
+                            <div className="flex flex-col gap-2">
+                                {userProfile?.biography ? (
+                                    <span className="flex items-center gap-2">
+                                        <FaUser className="text-gray-500" style={{ fontSize: 16 }} />
+                                        <p className="text-gray-700 text-sm ">{userProfile.biography}</p>
+                                    </span>
+                                ) : (
+                                    isOwnProfile && (
+                                        <button
+                                            onClick={openEdit}
+                                            className="w-full text-sm text-blue-600 hover:bg-blue-50 py-2 rounded-md transition-colors mb-1 cursor-pointer"
+                                        >
+                                            + Agregar biografía
+                                        </button>
+                                    )
+                                )}
+                                {userProfile?.dayOfBirth && userProfile?.monthOfBirth && (
+                                    <span className="flex items-center gap-2">
+                                        <FaCakeCandles className="text-gray-500" style={{ fontSize: 16 }} />
+                                        <p className="text-gray-700 text-sm">
+                                            {userProfile.dayOfBirth} de {userProfile.monthOfBirth} de {userProfile.yearOfBirth}
+                                        </p>
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Lista de amigos */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="font-bold text-lg">Amigos</h2>
+                            <span className="text-gray-500 text-sm">{friendsCount} {friendsCount === 1 ? "amigo" : "amigos"}</span>
+                        </div>
+                        {friends.length === 0 ? (
+                            <p className="text-sm text-gray-400">No hay amigos para mostrar.</p>
+                        ) : (
+                            <div className="grid grid-cols-3 gap-2">
+                                {friends.slice(0, 9).map(f => (
+                                    <Link
+                                        key={f.id}
+                                        to={`/u/${f.authorSlug}`}
+                                        className="flex flex-col items-center gap-1 group"
+                                    >
+                                        {f.authorPhoto ? (
+                                            <img
+                                                src={f.authorPhoto}
+                                                alt={f.authorName}
+                                                className="w-full aspect-square object-cover rounded-lg group-hover:opacity-90 transition-opacity"
+                                            />
+                                        ) : (
+                                            <div className="w-full aspect-square rounded-lg bg-gray-200 flex items-center justify-center">
+                                                <FaUser className="text-gray-400 text-xl" />
+                                            </div>
+                                        )}
+                                        <span className="text-xs text-gray-700 text-start font-semibold truncate w-full leading-tight">
+                                            {f.authorName} {f.authorSurname}
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                )}
 
-                {userProfile?.id && <PostList userId={userProfile?.id} />}
+                </div>
+
+                {/* Columna derecha */}
+                <div className="flex-1 min-w-0 flex flex-col gap-4">
+                    {isAuthenticated && isOwnProfile && (
+                        <PostComposer />
+                    )}
+
+                    <div className="w-full bg-white rounded-lg border border-gray-200 p-4">
+                        <h2 className="text-xl font-bold">Publicaciones</h2>
+                        {userProfile?.id && <PostList userId={userProfile?.id} />}
+                    </div>
+                </div>
             </div>
 
             <EditProfileDialog
