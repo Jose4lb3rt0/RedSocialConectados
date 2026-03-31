@@ -71,7 +71,6 @@ export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
             onConnect: () => {
                 connecting = false
                 setConnected(true)
-                console.log("[WS] Conectado")
 
                 client.subscribe("/user/queue/mensajes", (frame) => {
                     const mensaje: MensajeDto = JSON.parse(frame.body)

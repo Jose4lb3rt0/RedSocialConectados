@@ -8,7 +8,7 @@ type User = {
     name: string,
     surname: string,
     photoURL?: string,
-    string: string,
+    string: string
 }
 
 type AuthContextType = {
@@ -36,10 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (e.key === "jwt") {
                 setToken(localStorage.getItem("jwt"))
             }
-
-            window.addEventListener("storage", onStorage)
-            return (() => window.removeEventListener("storage", onStorage))
         }
+
+        window.addEventListener("storage", onStorage)
+        return (() => window.removeEventListener("storage", onStorage))
     }, [token])
 
     useEffect(() => {
