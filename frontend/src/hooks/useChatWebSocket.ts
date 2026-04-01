@@ -17,6 +17,7 @@ type UseChatWebSocketOptions = {
     onTyping?: (event: TypingEvent) => void
     onLeido?: (conversacionId: number) => void
     onNotificacion?: (notificacion: NotificationDto) => void
+    onPresence?: (email: string, conectado: boolean) => void
 }
 
 // Singleton fuera de React — un solo cliente para toda la app
@@ -119,6 +120,19 @@ export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
                     // Incrementar el contador de no leídas
                     qc.setQueryData<number>(["notifications", "unread-count"], (old = 0) => old + 1)
                     optionsRef.current.onNotificacion?.(notificacion)
+                })
+
+                // Presencia de amigos en tiempo real
+                client.subscribe("/user/queue/presence", (frame) => {
+                    const { email, conectado }: { email: string; conectado: boolean } = JSON.parse(frame.body)
+                    qc.setQueryData<string[]>(["presence", "amigos"], (old = []) => {
+                        if (conectado) {
+                            return old.includes(email) ? old : [...old, email]
+                        } else {
+                            return old.filter(e => e !== email)
+                        }
+                    })
+                    optionsRef.current.onPresence?.(email, conectado)
                 })
             },
             onDisconnect: () => {
