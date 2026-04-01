@@ -38,6 +38,7 @@ public class AmistadServiceImpl implements AmistadService {
         dto.setAuthorSurname(u.getSurname());
         dto.setAuthorSlug(u.getSlug());
         dto.setAuthorPhoto(u.getProfilePicture() != null ? u.getProfilePicture().getImagenUrl() : null);
+        dto.setEmail(u.getEmail());
         return dto;
     }
 
@@ -176,7 +177,8 @@ public class AmistadServiceImpl implements AmistadService {
                 u.getName(),
                 u.getSurname(),
                 u.getSlug(),
-                photo
+                photo,
+                u.getEmail()
         );
     }
 }

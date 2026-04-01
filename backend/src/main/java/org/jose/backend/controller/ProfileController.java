@@ -81,6 +81,7 @@ public class ProfileController {
                     dto.setAuthorSurname(amigo.getSurname());
                     dto.setAuthorSlug(amigo.getSlug());
                     dto.setAuthorPhoto(amigo.getProfilePicture() != null ? amigo.getProfilePicture().getImagenUrl() : null);
+                    dto.setEmail(amigo.getEmail());
                     return dto;
                 });
         return ResponseEntity.ok(amigos);

@@ -10,15 +10,18 @@ public class UserSummaryResponse {
     private String authorSurname;
     private String authorSlug;
     private String authorPhoto;
+    private String email;
 
-    public UserSummaryResponse(Long id, String authorName, String authorSurname, String authorSlug, String authorPhoto) {
+    public UserSummaryResponse(Long id, String authorName, String authorSurname, String authorSlug, String authorPhoto, String email) {
         this.id = id;
         this.authorName = authorName;
         this.authorSurname = authorSurname;
         this.authorSlug = authorSlug;
         this.authorPhoto = authorPhoto;
+        this.email = email;
     }
 
+    // para poder crearlo vacio en un inicio
     public UserSummaryResponse() {
     }
 
@@ -67,4 +70,8 @@ public class UserSummaryResponse {
     public void setAuthorPhoto(String authorPhoto) {
         this.authorPhoto = authorPhoto;
     }
+
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
 }
