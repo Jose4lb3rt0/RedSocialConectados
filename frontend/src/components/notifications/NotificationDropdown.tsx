@@ -34,7 +34,7 @@ const REACTION_EMOJI: Record<string, string> = {
 const NotificationDropdown: React.FC<Props> = ({ open, onClose }) => {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const { data, isLoading, isError, isFetchingNextPage, hasNextPage, fetchNextPage,  } = useNotifications(10);
+  const { data, isLoading, isError, isFetchingNextPage, hasNextPage, fetchNextPage, } = useNotifications(10);
   const markOne = useMarkNotificationAsRead();
   const markAll = useMarkAllNotificationsAsRead();
 

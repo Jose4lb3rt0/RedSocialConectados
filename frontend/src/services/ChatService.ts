@@ -7,6 +7,7 @@ export type ConversacionDto = {
     otroUsuarioName: string
     otroUsuarioSlug: string
     otroUsuarioPhotoUrl?: string | null
+    otroUsuarioEmail?: string | null
     ultimoMensaje?: string | null
     ultimoMensajeTipo?: string | null
     ultimoMensajeEn?: string | null

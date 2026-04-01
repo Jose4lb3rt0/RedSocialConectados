@@ -6,10 +6,8 @@ async function obtenerAmigosConectados(): Promise<string[]> {
     return apiFetch("/presence/amigos")
 }
 
-
 // Devuelve el Set de emails de amigos conectados.
-// La carga inicial es HTTP y las actualizaciones llegan por WebSocket al caché ["presence", "amigos"]
-// desde useChatWebSocket.
+// La carga inicial es HTTP y las actualizaciones llegan por WebSocket al caché desde useWebSocket.
 
 export function usePresence() {
     const { isAuthenticated } = useAuth()
@@ -18,7 +16,9 @@ export function usePresence() {
         queryKey: ["presence", "amigos"],
         queryFn: obtenerAmigosConectados,
         enabled: isAuthenticated,
-        staleTime: Infinity, // El WS mantiene el caché actualizado
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+        initialData: []
     })
 
     const conectadosSet = new Set(emailsConectados)

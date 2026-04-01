@@ -60,7 +60,7 @@ export default function PostList({ userId, initialPostId }: PostListProps) {
   const posts = data?.pages.flatMap((page) => page.content) ?? [];
 
   if (posts.length === 0) {
-    return <p className="text-gray-500">Sin publicaciones para mostrar</p>;
+    return <p className="text-gray-500 text-center pt-5">Sin publicaciones para mostrar</p>;
   }
 
   const handleEditPost = (postId: number) => setIsEditingPostId(postId);

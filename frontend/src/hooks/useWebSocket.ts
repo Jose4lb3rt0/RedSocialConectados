@@ -12,7 +12,7 @@ export type TypingEvent = {
     escribiendo: boolean
 }
 
-type UseChatWebSocketOptions = {
+type useWebSocketOptions = {
     onMensaje?: (mensaje: MensajeDto) => void
     onTyping?: (event: TypingEvent) => void
     onLeido?: (conversacionId: number) => void
@@ -25,7 +25,7 @@ let globalClient: Client | null = null
 let globalToken: string | null = null
 let connecting = false // evita doble conexión por StrictMode
 
-export function useChatWebSocket(options: UseChatWebSocketOptions = {}) {
+export function useWebSocket(options: useWebSocketOptions = {}) {
     const { token, isAuthenticated } = useAuth()
     const qc = useQueryClient()
     const optionsRef = useRef(options)

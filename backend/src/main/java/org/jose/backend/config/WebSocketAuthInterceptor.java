@@ -81,17 +81,16 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     }
 
     /* Publica en WS */
-    private void notificarAmigos(Long usuarioId, String email, boolean conectado) {
+    private void notificarAmigos(Long usuarioId, String emailDelQueConecta, boolean conectado) {
         if (messagingTemplate == null) return;
 
-        solicitudAmistadRepository
-                .findEmailsAmigos(usuarioId).forEach(amigoEmail -> {
-                    messagingTemplate.convertAndSendToUser(
-                            amigoEmail,
-                            "/queue/presence",
-                            new PresenceEvent(amigoEmail, conectado)
-                    );
-                });
+        solicitudAmistadRepository.findEmailsAmigos(usuarioId).forEach(amigoEmail -> {
+                messagingTemplate.convertAndSendToUser(
+                        amigoEmail,
+                        "/queue/presence",
+                        new PresenceEvent(emailDelQueConecta, conectado) //no es el email del amigo a quien se le manda la notificacion
+                );
+            });
     }
 
     public record PresenceEvent(String email, boolean conectado) {}

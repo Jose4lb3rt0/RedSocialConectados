@@ -25,16 +25,17 @@ public class PresenceController {
         this.solicitudAmistadRepository = solicitudAmistadRepository;
     }
 
+    /*
+    * Devuelve los emails de los amigos del usuario autenticado que están conectados
+    * "findEmailsAmigos" evita lazy loading sobre las entidades de la solicitud
+    */
     @GetMapping("/amigos")
     public ResponseEntity<List<String>> amigosConectados() {
         Usuario me = currentUserService.getUser();
 
         List<String> conectados = solicitudAmistadRepository
-            .findAmigos(me.getId(), Pageable.unpaged())
+            .findEmailsAmigos(me.getId())
             .stream()
-            .map(s -> s.getSolicitante().getId().equals(me.getId())
-                    ? s.getDestinatario().getEmail()
-                    : s.getSolicitante().getEmail())
             .filter(presenceService::estaConectado)
             .toList();
 

@@ -76,6 +76,7 @@ public class ChatServiceImpl implements ChatService {
             otro.getName() + " " + otro.getSurname(),
             otro.getSlug(),
             otro.getProfilePicture() != null ? otro.getProfilePicture().getImagenUrl() : null,
+            otro.getEmail(),
             ultimoContenido,
             ultimoTipo,
             c.getUltimoMensajeEn(),

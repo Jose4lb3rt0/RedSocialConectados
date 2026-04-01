@@ -1,4 +1,4 @@
-import { useChatWebSocket, type TypingEvent } from "@/hooks/useChatWebSocket"
+import { useWebSocket, type TypingEvent } from "@/hooks/useWebSocket"
 import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react"
 
@@ -48,7 +48,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, [])
 
-    const { enviarTyping, enviarLeido, connected } = useChatWebSocket({ onTyping: handleTyping })
+    const { enviarTyping, enviarLeido, connected } = useWebSocket({ onTyping: handleTyping })
 
     const abrirChat = useCallback((ventana: VentanaChat) => {
         setVentanasAbiertas((prev) => {

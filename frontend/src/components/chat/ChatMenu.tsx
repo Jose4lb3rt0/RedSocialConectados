@@ -1,7 +1,18 @@
 import { useChat } from "@/context/ChatContext";
 import { useConversaciones } from "@/hooks/useChats";
+import { useFriendshipActions } from "@/hooks/useFriendshipActions";
+import { usePresence } from "@/hooks/usePresence";
 import type { ConversacionDto } from "@/services/ChatService";
 import { FaComment, FaTimes, FaUser } from "react-icons/fa";
+
+type Amigo = {
+    id: number
+    authorName: string
+    authorSurname: string
+    authorSlug: string
+    authorPhoto?: string | null
+    email?: string | null
+}
 
 type Props = {
     onClick?: () => void // no se usa aún porque se abre desde el navbar
@@ -10,6 +21,7 @@ type Props = {
 export default function ChatMenu({ onClick }: Props) {
     const { data, isLoading } = useConversaciones()
     const { panelVisible, setPanelVisible, abrirChat } = useChat()
+    const { estaConectado } = usePresence()
 
     const conversaciones = data?.pages.flatMap((p) => p.content) ?? []
     const totalNoLeidos = conversaciones.reduce((acc, c) => acc + (c.noLeidos ?? 0), 0)
@@ -69,47 +81,55 @@ export default function ChatMenu({ onClick }: Props) {
 
                         {!isLoading && conversaciones.length === 0 && <p className="px-4 py-3 text-sm text-gray-400">No tienes conversaciones aún.</p>}
 
-                        {conversaciones.map((conv) => (
-                            <button
-                                key={conv.id}
-                                onClick={() => handleAbrirConversacion(conv)}
-                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left cursor-pointer"
-                            >
-                                <div className="relative shrink-0">
-                                    {conv.otroUsuarioPhotoUrl ? (
-                                        <img
-                                            src={conv.otroUsuarioPhotoUrl}
-                                            className="w-9 h-9 rounded-full object-cover"
-                                            alt=""
-                                        />
-                                    ) : (
-                                        <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <FaUser className="text-gray-400" style={{ fontSize: 16 }} />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex-1 flex justify-between items-center min-w-0">
-                                    <div className="flex flex-col justify-between w-full">
-                                        <span className={`text-sm truncate ${conv.noLeidos > 0 ? "font-semibold" : "font-medium"}`}>
-                                            {conv.otroUsuarioName}
-                                        </span>
-                                        <div className="flex items-center">
-                                            <p className={`text-xs truncate ${conv.noLeidos > 0 ? "text-gray-800 font-medium" : "text-gray-400"}`}>
-                                                {conv.ultimoMensaje ?? "Iniciar conversación"}
-                                            </p>
-                                            <span className="text-xs text-gray-400 shrink-0 ml-1">
-                                                · {formatTiempo(conv.ultimoMensajeEn)}
-                                            </span>
-                                        </div>
+                        {conversaciones.map((conv) => {
+                            const conectado = estaConectado(conv.otroUsuarioEmail)
+
+                            return (
+                                <button
+                                    key={conv.id}
+                                    onClick={() => handleAbrirConversacion(conv)}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left cursor-pointer"
+                                >
+                                    <div className="relative shrink-0">
+                                        {conv.otroUsuarioPhotoUrl ? (
+                                            <img
+                                                src={conv.otroUsuarioPhotoUrl}
+                                                className="w-9 h-9 rounded-full object-cover"
+                                                alt=""
+                                            />
+                                        ) : (
+                                            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <FaUser className="text-gray-400" style={{ fontSize: 16 }} />
+                                            </div>
+                                        )}
+                                        {/* Puntito verde si está conectado */}
+                                        {conectado && (
+                                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                                        )}
                                     </div>
-                                    {conv.noLeidos > 0 && (
-                                        <span className="ml-1 shrink-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                            {conv.noLeidos > 9 ? "9+" : conv.noLeidos}
-                                        </span>
-                                    )}
-                                </div>
-                            </button>
-                        ))}
+                                    <div className="flex-1 flex justify-between items-center min-w-0">
+                                        <div className="flex flex-col justify-between w-full">
+                                            <span className={`text-sm truncate ${conv.noLeidos > 0 ? "font-semibold" : "font-medium"}`}>
+                                                {conv.otroUsuarioName}
+                                            </span>
+                                            <div className="flex items-center">
+                                                <p className={`text-xs truncate ${conv.noLeidos > 0 ? "text-gray-800 font-medium" : "text-gray-400"}`}>
+                                                    {conv.ultimoMensaje ?? "Iniciar conversación"}
+                                                </p>
+                                                <span className="text-xs text-gray-400 shrink-0 ml-1">
+                                                    · {formatTiempo(conv.ultimoMensajeEn)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {conv.noLeidos > 0 && (
+                                            <span className="ml-1 shrink-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                                {conv.noLeidos > 9 ? "9+" : conv.noLeidos}
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
             )}

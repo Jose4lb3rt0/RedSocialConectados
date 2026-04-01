@@ -239,8 +239,6 @@ const Navbar: React.FC = () => {
                     </Link>
                 )}
             </ul>
-
-            {isAuthenticated && <ChatPanel />}
         </nav >
     )
 }
