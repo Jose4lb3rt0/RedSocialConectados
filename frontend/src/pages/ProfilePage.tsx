@@ -16,8 +16,6 @@ import PostList from "@/components/posts/PostList"
 import PostComposer from "@/components/posts/PostComposer"
 import { useChat } from "@/context/ChatContext"
 import { useObtenerOCrearConversacion } from "@/hooks/useChats"
-import { sl } from "zod/v4/locales"
-import { User } from "lucide-react"
 
 const ProfilePage: React.FC = () => {
     const yo = useAuth()
@@ -119,6 +117,10 @@ const ProfilePage: React.FC = () => {
 
     //definido aqui y no en la iteración como en ResultsPage o FriendsPage, pues aqui ya estamos unicamente a un usuario
     const friendshipStatus = userProfile ? getStatus(userProfile.id) : null
+
+    const nombreMes = (mes: number) => {
+        return new Date(2000, mes - 1).toLocaleString("es-ES", { month: "long" })
+    }
 
     return (
         <div className="w-full max-w-5xl mx-auto">
@@ -306,7 +308,7 @@ const ProfilePage: React.FC = () => {
                                     <span className="flex items-center gap-2">
                                         <FaCakeCandles className="text-gray-500" style={{ fontSize: 16 }} />
                                         <p className="text-gray-700 text-sm">
-                                            {userProfile.dayOfBirth} de {userProfile.monthOfBirth} de {userProfile.yearOfBirth}
+                                            {userProfile.dayOfBirth} de {nombreMes(userProfile.monthOfBirth)} de {userProfile.yearOfBirth}
                                         </p>
                                     </span>
                                 )}

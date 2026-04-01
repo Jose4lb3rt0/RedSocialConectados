@@ -8,8 +8,8 @@ import { Link, useSearchParams } from "react-router-dom"
 import NotificationBell from "../notifications/NotificationBell"
 import NotificationDropdown from "../notifications/NotificationDropdown"
 import ChatPanel from "../chat/ChatPanel"
-import ChatButton from "../chat/ChatButton"
-import ChatMenu from "../chat/ChatButton"
+import ChatButton from "../chat/ChatMenu"
+import ChatMenu from "../chat/ChatMenu"
 import { useChat } from "@/context/ChatContext"
 
 const Navbar: React.FC = () => {
@@ -44,7 +44,7 @@ const Navbar: React.FC = () => {
         setIsChatMenuOpen(false)
         setPanelVisible(false)
     }
- 
+
     const handleOpenChatMenu = () => {
         setIsChatMenuOpen(!isChatMenuOpen)
         setPanelVisible(!panelVisible)
