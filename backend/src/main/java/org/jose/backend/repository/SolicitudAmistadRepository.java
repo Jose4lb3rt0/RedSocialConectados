@@ -48,4 +48,15 @@ public interface SolicitudAmistadRepository extends JpaRepository<SolicitudAmist
              and ((s.solicitante.id = :a and s.destinatario.id = :b) or (s.solicitante.id = :b and s.destinatario.id = :a))
            """)
     Optional<SolicitudAmistad> findAmistadEntre(@Param("a") Long a, @Param("b") Long b);
+
+    @Query("""
+       select case 
+           when s.solicitante.id = :userId then s.destinatario.email
+           else s.solicitante.email
+       end
+       from SolicitudAmistad s
+       where s.estado = 'ACEPTADA'
+         and (s.solicitante.id = :userId or s.destinatario.id = :userId)
+       """)
+    List<String> findEmailsAmigos(@Param("userId") Long userId);
 }

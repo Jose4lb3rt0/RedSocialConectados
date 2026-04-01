@@ -85,16 +85,11 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         if (messagingTemplate == null) return;
 
         solicitudAmistadRepository
-                .findAmigos(usuarioId, org.springframework.data.domain.Pageable.unpaged())
-                .forEach(solicitud -> {
-                    String amigoEmail = solicitud.getSolicitante().getId().equals(usuarioId)
-                            ? solicitud.getDestinatario().getEmail()
-                            : solicitud.getSolicitante().getEmail();
-
+                .findEmailsAmigos(usuarioId).forEach(amigoEmail -> {
                     messagingTemplate.convertAndSendToUser(
                             amigoEmail,
                             "/queue/presence",
-                            new PresenceEvent(email, conectado)
+                            new PresenceEvent(amigoEmail, conectado)
                     );
                 });
     }

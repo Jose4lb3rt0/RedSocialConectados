@@ -3,7 +3,6 @@ package org.jose.backend.services;
 import org.jose.backend.dto.Friends.UserSummaryResponse;
 import org.jose.backend.model.Usuario;
 import org.jose.backend.repository.SearchRepository;
-import org.jose.backend.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,10 +24,11 @@ public class SearchServiceImpl implements SearchService {
         }
 
         Usuario me = currentUser.getUser();
-        return searchRepository.searchUsuarios(query, me.getId(), PageRequest.of(page, size)).map(this::mappingUserSummary);
+        return searchRepository.searchUsuarios(query, me.getId(), PageRequest.of(page, size))
+                .map(this::mappingUserSummary);
     }
 
-    //AmistadServiceImpl
+    // AmistadServiceImpl
     public UserSummaryResponse mappingUserSummary(Usuario u) {
         String photo = u.getProfilePicture() != null ? u.getProfilePicture().getImagenUrl() : null;
         return new UserSummaryResponse(
@@ -36,7 +36,7 @@ public class SearchServiceImpl implements SearchService {
                 u.getName(),
                 u.getSurname(),
                 u.getSlug(),
-                photo
-        );
+                photo,
+                u.getEmail());
     }
 }
