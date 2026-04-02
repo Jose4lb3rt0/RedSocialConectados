@@ -1,10 +1,8 @@
-import { Link } from "react-router-dom"
 import { FaUser } from "react-icons/fa"
 import { useFriendshipActions } from "@/hooks/useFriendshipActions"
 import { usePresence } from "@/hooks/usePresence"
 import { useObtenerOCrearConversacion } from "@/hooks/useChats"
 import { useChat } from "@/context/ChatContext"
-import type { UserSummaryResponse } from "@/services/FriendsService"
 
 // El tipo que devuelve amigos en useFriendshipActions
 type Amigo = {
@@ -34,7 +32,7 @@ export default function RightAside() {
     }
 
     return (
-        <aside className="w-72 shrink-0 h-full overflow-y-auto px-2 py-4">
+        <aside className="w-72 h-full overflow-y-auto px-2 py-4">
             <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                 Contactos
             </p>
