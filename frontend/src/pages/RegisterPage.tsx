@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form"
 import { useUsers } from "../hooks/useUsers"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { registerSchema, type RegisterFormData } from "../schemas/userSchemas"
+import { Link } from "react-router-dom"
 
 const RegisterPage: React.FC = () => {
     const { registrarUsuario } = useUsers()
@@ -14,83 +15,237 @@ const RegisterPage: React.FC = () => {
     }
 
     return (
-        <div className="p-8 min-h-screen w-full">
-            {registrarUsuario.isError && (
-                <p className="mb-4 text-red-600 bg-red-100 rounded px-3 py-2">
-                    {(registrarUsuario.error as any)?.message || "No se pudo completar el registro."}
-                </p>
-            )}
-            <div className="max-w-6xl mx-auto">
-                <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    noValidate
-                    className="space-y-4"
-                >
-                    {/* Nombres y apellidos */}
-                    <div className="flex gap-2">
-                        <div className="flex flex-col gap-1 w-full">
-                            <label className="text-sm" htmlFor="name">Nombre</label>
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
+            <div className="w-full max-w-lg">
+                <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                    {registrarUsuario.isError && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-lg">
+                            <p className="text-red-600 text-sm font-medium">
+                                {(registrarUsuario.error as any)?.message || "No se pudo completar el registro."}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        {/* Name and Surname Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    htmlFor="name"
+                                    className="block text-sm text-gray-600 mb-1"
+                                >
+                                    Nombre
+                                </label>
+                                <input
+                                    id="name"
+                                    type="text"
+                                    placeholder="Nombre"
+                                    disabled={registrarUsuario.isPending}
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    {...register('name', {
+                                        required: 'El nombre es obligatorio',
+                                        minLength: {
+                                            value: 2,
+                                            message: 'El nombre debe tener al menos 2 caracteres',
+                                        },
+                                    })}
+                                />
+                                {errors.name && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.name.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="surname"
+                                    className="block text-sm text-gray-600 mb-1"
+                                >
+                                    Apellido
+                                </label>
+                                <input
+                                    id="surname"
+                                    type="text"
+                                    placeholder="Apellido"
+                                    disabled={registrarUsuario.isPending}
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    {...register('surname', {
+                                        required: 'El apellido es obligatorio',
+                                        minLength: {
+                                            value: 2,
+                                            message: 'El apellido debe tener al menos 2 caracteres',
+                                        },
+                                    })}
+                                />
+                                {errors.surname && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.surname.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Gender */}
+                        <div>
+                            <label
+                                htmlFor="gender"
+                                className="block text-sm text-gray-600 mb-1"
+                            >
+                                Género
+                            </label>
+                            <select
+                                id="gender"
+                                disabled={registrarUsuario.isPending}
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                                {...register('gender', {
+                                    required: 'Selecciona un género',
+                                })}
+                            >
+                                <option value="">Selecciona una opción</option>
+                                <option value="male">Hombre</option>
+                                <option value="female">Mujer</option>
+                                <option value="other">Otro</option>
+                                <option value="prefer_not">Prefiero no decir</option>
+                            </select>
+                            {errors.gender && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.gender.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Birthday */}
+                        <div>
+                            <label
+                                htmlFor="birthday"
+                                className="block text-sm text-gray-600 mb-1"
+                            >
+                                Fecha de nacimiento
+                            </label>
                             <input
-                                id="name"
-                                type="text"
-                                {...register("name")}
-                                className="border py-1 px-2 rounded"
+                                id="birthday"
+                                type="date"
+                                disabled={registrarUsuario.isPending}
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                {...register('birthday', {
+                                    required: 'La fecha de nacimiento es obligatoria',
+                                })}
                             />
-                            {errors.name && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.name.message}</p>}
+                            {errors.birthday && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.birthday.message}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="flex flex-col gap-1 w-full">
-                            <label className="text-sm" htmlFor="surname">Apellido</label>
-                            <input id="surname" type="text" {...register("surname")} className="border py-1 px-2 rounded" />
-                            {errors.surname && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.surname.message}</p>}
+                        {/* Email */}
+                        <div>
+                            <label
+                                htmlFor="email"
+                                className="block text-sm text-gray-600 mb-1"
+                            >
+                                Correo electrónico
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                placeholder="tu@email.com"
+                                disabled={registrarUsuario.isPending}
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                {...register('email', {
+                                    required: 'El correo electrónico es obligatorio',
+                                    pattern: {
+                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                        message: 'Ingresa un correo electrónico válido',
+                                    },
+                                })}
+                            />
+                            {errors.email && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.email.message}
+                                </p>
+                            )}
                         </div>
+
+                        {/* Password */}
+                        <div>
+                            <label
+                                htmlFor="password"
+                                className="block text-sm text-gray-600 mb-1"
+                            >
+                                Contraseña
+                            </label>
+                            <input
+                                id="password"
+                                type="password"
+                                placeholder="Contraseña"
+                                disabled={registrarUsuario.isPending}
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                {...register('password', {
+                                    required: 'La contraseña es obligatoria',
+                                    minLength: {
+                                        value: 6,
+                                        message: 'La contraseña debe tener al menos 6 caracteres',
+                                    },
+                                })}
+                            />
+                            {errors.password && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.password.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div>
+                            <label
+                                htmlFor="confirmPassword"
+                                className="block text-sm text-gray-600 mb-1"
+                            >
+                                Confirmar contraseña
+                            </label>
+                            <input
+                                id="confirmPassword"
+                                type="password"
+                                placeholder="Confirmar contraseña"
+                                disabled={registrarUsuario.isPending}
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                {...register('confirmPassword', {
+                                    required: 'Confirma tu contraseña',
+                                })}
+                            />
+                            {errors.confirmPassword && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.confirmPassword.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={registrarUsuario.isPending}
+                            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                        >
+                            {registrarUsuario.isPending ? 'Registrando...' : 'Registrar'}
+                        </button>
+                    </form>
+
+                    {/* Login Link */}
+                    <div className="mt-6 text-center border-t border-gray-200 pt-6">
+                        <p className="text-gray-600 text-sm">
+                            ¿Ya tienes cuenta?{' '}
+                            <Link
+                                to="/login"
+                                className="text-blue-600 font-semibold hover:underline"
+                            >
+                                Inicia sesión
+                            </Link>
+                        </p>
                     </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm" htmlFor="gender">Género</label>
-                        <select id="gender" {...register("gender")} className="border py-1 px-2 rounded">
-                            <option value="male">Masculino</option>
-                            <option value="female">Femenino</option>
-                            <option value="other">Otro</option>
-                            <option value="prefer not to say">Prefiero no decir</option>
-                        </select>
-                        {errors.gender && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.gender.message}</p>}
-
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm" htmlFor="birthday">Fecha de Nacimiento</label>
-                        <input
-                            id="birthday"
-                            type="date"
-                            {...register("birthday")}
-                            className="border py-1 px-2 rounded"
-                        />
-                        {errors.birthday && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.birthday.message}</p>}
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm" htmlFor="email">Email</label>
-                        <input id="email" type="email" {...register("email")} className="border py-1 px-2 rounded" />
-                        {errors.email && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.email.message}</p>}
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm" htmlFor="password">Contraseña</label>
-                        <input id="password" type="password" {...register("password")} className="border py-1 px-2 rounded" />
-                        {errors.password && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.password.message}</p>}
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm" htmlFor="confirmPassword">Confirmar Contraseña</label>
-                        <input id="confirmPassword" type="password" {...register("confirmPassword")} className="border py-1 px-2 rounded" />
-                        {errors.confirmPassword && <p className="text-red-500 bg-red-500/30 rounded py-1 px-2">{errors.confirmPassword.message}</p>}
-                    </div>
-
-                    <button type="submit" disabled={registrarUsuario.isPending} className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-blue-300">
-                        {registrarUsuario.isPending ? 'Registrando...' : 'Registrar'}
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     )
